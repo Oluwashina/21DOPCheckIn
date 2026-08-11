@@ -1,5 +1,4 @@
 import {
-  CalendarIcon,
   ChartIcon,
   FlameIcon,
   GridIcon,
@@ -30,11 +29,13 @@ const TEAM_LEAD_NAV: NavItem[] = [
   { href: "/profile", label: "Profile", icon: UserIcon },
 ];
 
+// The admin takes part in the programme too, so Home (their own check-in)
+// leads. Sessions moves to a link on the dashboard to keep this to five tabs.
 const ADMIN_NAV: NavItem[] = [
+  { href: "/", label: "Home", icon: HomeIcon, exact: true },
   { href: "/admin", label: "Dashboard", icon: GridIcon, exact: true },
   { href: "/admin/teams", label: "Teams", icon: UsersIcon },
   { href: "/admin/members", label: "Members", icon: UserIcon },
-  { href: "/admin/sessions", label: "Sessions", icon: CalendarIcon },
   { href: "/admin/reports", label: "Reports", icon: ChartIcon },
 ];
 
@@ -49,6 +50,7 @@ export function isNavItemActive(item: NavItem, pathname: string): boolean {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-export function homeForRole(role: Role): string {
-  return role === "admin" ? "/admin" : "/";
+/** Everyone lands on their own check-in screen — including the admin. */
+export function homeForRole(_role: Role): string {
+  return "/";
 }

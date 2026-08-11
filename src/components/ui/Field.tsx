@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 const CONTROL =
   "w-full rounded-2xl border border-line bg-surface-2 px-4 text-[15px] text-text placeholder:text-faint " +
-  "transition-colors focus:border-flame/60 focus:outline-none";
+  "transition-colors focus:border-gold/60 focus:outline-none";
 
 export function Field({
   label,

@@ -57,9 +57,9 @@ export default function LoginPage() {
           <h1 className="mt-2 text-[42px] font-extrabold leading-[1.05] tracking-tight">
             21 Days of
             <br />
-            <span className="text-gradient-flame">Power</span>
+            <span className="text-gradient-gold">Power</span>
           </h1>
-          <p className="mt-2.5 text-[15px] font-semibold text-flame-soft">
+          <p className="mt-2.5 text-[15px] font-semibold text-gold-soft">
             {PROGRAM_THEME}
           </p>
           <p className="mt-1 text-sm text-muted">{PROGRAM_DATE_RANGE}</p>
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-muted">
             New here?{" "}
-            <Link href="/register" className="font-semibold text-flame-soft">
+            <Link href="/register" className="font-semibold text-gold-soft">
               Join your service team
             </Link>
           </p>
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   <span className="block text-sm font-semibold">{account.label}</span>
                   <span className="block text-xs text-faint">{account.hint}</span>
                 </span>
-                <span className="text-xs font-semibold text-flame-soft">Sign in</span>
+                <span className="text-xs font-semibold text-gold-soft">Sign in</span>
               </button>
             ))}
           </div>

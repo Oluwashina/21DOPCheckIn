@@ -90,7 +90,7 @@ function TeamDashboard() {
           Team Accountability
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge tone="flame">{team.name}</Badge>
+          <Badge tone="gold">{team.name}</Badge>
           <Badge tone="muted">
             Day {day.day_number} of {PROGRAM_LENGTH}
           </Badge>
@@ -104,21 +104,21 @@ function TeamDashboard() {
           {sessions.map(({ session, status, checkedIn: count }) => (
             <div
               key={session.id}
-              className={`card p-4 ${status === "live" ? "border-flame/45" : ""}`}
+              className={`card p-4 ${status === "live" ? "border-gold/45" : ""}`}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-faint">
                   {shortTimeLabel(session.time)}
                 </span>
                 {status === "live" ? (
-                  <Badge tone="flame">
+                  <Badge tone="gold">
                     <LiveDot />
                     Live
                   </Badge>
                 ) : status === "completed" ? (
                   <Badge tone="mint">Completed</Badge>
                 ) : (
-                  <Badge tone="violet">Upcoming</Badge>
+                  <Badge tone="magenta">Upcoming</Badge>
                 )}
               </div>
               <p className="mt-2 text-[15px] font-bold leading-snug">{session.name}</p>
@@ -148,8 +148,8 @@ function TeamDashboard() {
         </div>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard label="Total members" value={members.length} />
-          <StatCard label="Checked in" value={checkedIn} tone="flame" />
-          <StatCard label="Shared" value={shared} tone="violet" />
+          <StatCard label="Checked in" value={checkedIn} tone="gold" />
+          <StatCard label="Shared" value={shared} tone="magenta" />
           <StatCard label="Liked" value={liked} tone="mint" />
         </div>
 
@@ -180,7 +180,7 @@ function TeamDashboard() {
           action={
             <Link
               href="/team/members"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-flame-soft"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-gold-soft"
             >
               Full team
               <ChevronRightIcon width={14} height={14} />

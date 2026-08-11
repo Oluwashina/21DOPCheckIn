@@ -28,7 +28,7 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
             compact ? "text-[15px]" : "text-lg"
           }`}
         >
-          21 Days of <span className="text-gradient-flame">Power</span>
+          21 Days of <span className="text-gradient-gold">Power</span>
         </span>
       </span>
     </span>

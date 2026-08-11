@@ -3,7 +3,7 @@ import type { CheckInInput, Database, Team, User } from "../types";
 import type { DataAdapter, NewUserInput } from "./adapter";
 
 /** Bump when the seed shape or programme dates change, to force a re-seed. */
-const STORAGE_KEY = "21dop:db:v4";
+const STORAGE_KEY = "21dop:db:v5";
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";

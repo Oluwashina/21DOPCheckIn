@@ -70,13 +70,33 @@ signed in on that device. **Profile → Reset demo data** wipes and re-seeds eve
 lead, the member checks in and later marks shared/liked, then asserts that team stats,
 personal progress, attendance rates and CSV exports all update correctly.
 
+## Brand
+
+The palette follows The New's brand guide and lives in `src/app/globals.css`:
+
+| Token | Hex | Used for |
+| --- | --- | --- |
+| `gold` | `#FFC533` | Primary actions, live sessions, progress |
+| `ink` | `#000000` | App background |
+| `text` | `#FFFFFF` | Body text |
+| `navy` | `#1F3D7B` | Background wash, avatars |
+| `magenta` | `#E82D88` | Secondary accent (shares, lead badges) |
+| `cream` / `peach` | `#FFF3BF` / `#FDD9B9` | Gradient highlights, confetti |
+
+Gold is a light surface, so anything on it uses `text-ink` rather than white. `mint` and
+`rose` are kept outside the brand set for their one job each: success and destructive.
+
 ## Roles and screens
 
 **Member** — Home (today's sessions), My Progress, Profile.
 **Team Lead** — Home, Team Dashboard, My Team, Profile.
-**Admin** — Dashboard, Teams, Members, Sessions, Reports.
+**Admin** — Home, Dashboard, Teams, Members, Reports (Sessions is linked from the
+dashboard).
 
-Members cannot reach team or admin screens; `RoleGuard` redirects them to their own home.
+Everyone checks in from the same Home screen, the admin included — an admin takes part in
+the programme like anyone else, counts in the programme totals, and can join a service
+team to appear on its roster. Members cannot reach team or admin screens; `RoleGuard`
+redirects them to their own home.
 
 ## Architecture
 
@@ -89,7 +109,7 @@ src/
   lib/
     types.ts          Data model: users, teams, days, sessions, check_ins
     program.ts        Programme constants, dates, session-status-from-clock logic
-    seed.ts           Deterministic demo data (10 teams, 21 days, 63 sessions)
+    seed.ts           Deterministic demo data (14 teams, every day and session)
     stats.ts          All selectors and roll-ups used by dashboards
     store.tsx         React context: auth, current data, mutations
     data/             The swap point for the backend

@@ -51,8 +51,7 @@ export default function AdminTeamsPage() {
       <section>
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Teams</h1>
         <p className="mt-1 text-sm text-muted">
-          {teams.length} service teams ·{" "}
-          {db.users.filter((user) => user.role !== "admin").length} people
+          {teams.length} service teams · {db.users.length} people
         </p>
       </section>
 
@@ -158,7 +157,7 @@ export default function AdminTeamsPage() {
                           <div className="mt-1.5 flex flex-wrap items-center gap-2">
                             <Badge tone="muted">{members.length} members</Badge>
                             {lead ? (
-                              <Badge tone="violet">Lead · {lead.name}</Badge>
+                              <Badge tone="magenta">Lead · {lead.name}</Badge>
                             ) : (
                               <Badge tone="rose">No lead</Badge>
                             )}

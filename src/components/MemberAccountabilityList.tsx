@@ -49,7 +49,7 @@ export function MemberAccountabilityList({
               <p className="truncate text-[15px] font-semibold leading-tight">
                 {row.user.name}
                 {row.user.id === leadId ? (
-                  <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-violet">
+                  <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-magenta">
                     Lead
                   </span>
                 ) : null}
@@ -93,7 +93,7 @@ export function MemberAccountabilityList({
                     <Avatar name={row.user.name} size="sm" />
                     <span className="font-semibold">{row.user.name}</span>
                     {row.user.id === leadId ? (
-                      <span className="rounded-full border border-violet/30 bg-violet/10 px-2 py-0.5 text-[10px] font-bold text-violet">
+                      <span className="rounded-full border border-magenta/30 bg-magenta/10 px-2 py-0.5 text-[10px] font-bold text-magenta">
                         Lead
                       </span>
                     ) : null}

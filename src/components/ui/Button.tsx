@@ -7,7 +7,7 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-flame-gradient text-ink glow-flame hover:brightness-105",
+  primary: "bg-gold-gradient text-ink glow-gold hover:brightness-105",
   secondary: "bg-surface-2 text-text border border-line hover:bg-surface-3",
   ghost: "text-muted hover:text-text hover:bg-surface-2",
   danger: "bg-rose/15 text-rose border border-rose/30 hover:bg-rose/25",
@@ -23,7 +23,7 @@ function classes(variant: Variant, size: Size, fullWidth?: boolean, className?: 
   return [
     "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200",
     "active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold",
     VARIANTS[variant],
     SIZES[size],
     fullWidth ? "w-full" : "",

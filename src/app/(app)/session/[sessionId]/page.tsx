@@ -141,12 +141,12 @@ export default function SessionCheckInPage() {
             Day {day.day_number} of {PROGRAM_LENGTH}
           </Badge>
           {status === "live" ? (
-            <Badge tone="flame">
+            <Badge tone="gold">
               <LiveDot />
               Live now
             </Badge>
           ) : status === "upcoming" ? (
-            <Badge tone="violet">
+            <Badge tone="magenta">
               <ClockIcon width={12} height={12} />
               Starts {shortTimeLabel(session.time)}
             </Badge>
@@ -160,7 +160,7 @@ export default function SessionCheckInPage() {
         <h1 className="text-[30px] font-extrabold leading-[1.1] tracking-tight">
           Check in for
           <br />
-          <span className="text-gradient-flame">{session.name}</span>
+          <span className="text-gradient-gold">{session.name}</span>
         </h1>
         <p className="mt-2 text-sm text-muted">{formatLongDate(day.date)}</p>
       </div>
@@ -189,7 +189,7 @@ export default function SessionCheckInPage() {
                   initial={{ scale: 0.4, rotate: -20 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 320, damping: 16 }}
-                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-flame-gradient glow-flame"
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gold-gradient glow-gold"
                 >
                   <CheckIcon width={30} height={30} strokeWidth={2.6} className="text-ink" />
                 </motion.div>
@@ -215,14 +215,14 @@ export default function SessionCheckInPage() {
                     aria-pressed={active}
                     className={`flex w-full items-center gap-3.5 rounded-[1.25rem] border p-4 text-left transition-all duration-200 active:scale-[0.99] ${
                       active
-                        ? "border-flame/45 bg-flame/10"
+                        ? "border-gold/45 bg-gold/10"
                         : "border-line bg-surface hover:bg-surface-2"
                     }`}
                   >
                     <span
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors ${
                         active
-                          ? "bg-flame-gradient text-ink"
+                          ? "bg-gold-gradient text-ink"
                           : "bg-surface-3 text-faint"
                       }`}
                     >
@@ -237,7 +237,7 @@ export default function SessionCheckInPage() {
                     <span
                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         active
-                          ? "border-flame bg-flame text-ink"
+                          ? "border-gold bg-gold text-ink"
                           : "border-line bg-transparent"
                       }`}
                     >

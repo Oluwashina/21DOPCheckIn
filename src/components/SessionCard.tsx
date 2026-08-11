@@ -35,19 +35,19 @@ export function SessionCard({
       href={`/session/${session.id}`}
       className={`group relative block overflow-hidden rounded-[1.25rem] border p-4 transition-all duration-200 active:scale-[0.99] sm:p-5 ${
         isLive
-          ? "border-flame/45 bg-surface glow-flame"
+          ? "border-gold/45 bg-surface glow-gold"
           : "border-line bg-surface hover:border-line/80 hover:bg-surface-2"
       }`}
     >
       {isLive ? (
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-flame-gradient" />
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gold-gradient" />
       ) : null}
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {isLive ? (
-              <Badge tone="flame">
+              <Badge tone="gold">
                 <LiveDot />
                 Live now
               </Badge>
@@ -57,7 +57,7 @@ export function SessionCard({
                 {done ? "Checked in" : SESSION_STATUS_LABEL[status]}
               </Badge>
             ) : (
-              <Badge tone="violet">
+              <Badge tone="magenta">
                 <ClockIcon width={12} height={12} />
                 Upcoming
               </Badge>
@@ -78,7 +78,7 @@ export function SessionCard({
 
         <span
           className={`mt-1 shrink-0 rounded-full p-1.5 transition-colors ${
-            isLive ? "bg-flame/15 text-flame-soft" : "text-faint group-hover:text-muted"
+            isLive ? "bg-gold/15 text-gold-soft" : "text-faint group-hover:text-muted"
           }`}
         >
           <ChevronRightIcon width={18} height={18} />
@@ -111,7 +111,7 @@ export function SessionCard({
       </div>
 
       {!waiting && !done ? (
-        <p className="mt-3 text-sm font-semibold text-flame-soft">
+        <p className="mt-3 text-sm font-semibold text-gold-soft">
           {isLive ? "Check in now →" : "Check in when you're ready →"}
         </p>
       ) : null}

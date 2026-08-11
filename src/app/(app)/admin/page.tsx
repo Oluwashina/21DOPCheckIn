@@ -7,8 +7,11 @@ import { ChevronRightIcon } from "@/components/icons";
 import { Badge, Card, EmptyState, ProgressBar, SectionTitle, StatCard } from "@/components/ui";
 import { formatLongDate, getSessionStatus, PROGRAM_LENGTH, shortTimeLabel } from "@/lib/program";
 import {
+  findCheckIn,
   getCurrentDay,
+  getMemberProgress,
   getMemberRowsForSession,
+  getParticipants,
   getProgramTotals,
   getSessionsForDay,
   getTeamAttendanceRate,
@@ -18,18 +21,22 @@ import {
 import { useStore } from "@/lib/store";
 
 export default function AdminDashboardPage() {
-  const { db, now } = useStore();
+  const { db, currentUser, now } = useStore();
 
   const view = useMemo(() => {
-    if (!db) return null;
+    if (!db || !currentUser) return null;
     const day = getCurrentDay(db, now);
     const sessions = getSessionsForDay(db, day.id);
-    const participants = db.users.filter((user) => user.role !== "admin" && user.active);
+    const participants = getParticipants(db);
 
     return {
       day,
       totals: getProgramTotals(db, now),
       participants: participants.length,
+      myProgress: getMemberProgress(db, currentUser.id, now),
+      mySessionsToday: sessions.filter(
+        (session) => findCheckIn(db, currentUser.id, session.id)?.checked_in,
+      ).length,
       sessions: sessions.map((session) => ({
         session,
         status: getSessionStatus(day, session, now),
@@ -45,10 +52,11 @@ export default function AdminDashboardPage() {
         }))
         .sort((a, b) => b.rate - a.rate),
     };
-  }, [db, now]);
+  }, [db, currentUser, now]);
 
   if (!view) return null;
-  const { day, totals, participants, sessions, teams } = view;
+  const { day, totals, participants, sessions, teams, myProgress, mySessionsToday } = view;
+  const elapsedToday = sessions.filter((item) => item.status !== "upcoming").length;
 
   return (
     <div className="space-y-7 pb-4">
@@ -57,10 +65,10 @@ export default function AdminDashboardPage() {
           Programme overview
         </p>
         <h1 className="mt-1 text-[30px] font-extrabold leading-tight tracking-tight sm:text-[34px]">
-          21 Days of <span className="text-gradient-flame">Power</span>
+          21 Days of <span className="text-gradient-gold">Power</span>
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge tone="flame">
+          <Badge tone="gold">
             Day {day.day_number} of {PROGRAM_LENGTH}
           </Badge>
           <span className="text-sm text-muted">{formatLongDate(day.date)}</span>
@@ -68,7 +76,29 @@ export default function AdminDashboardPage() {
       </section>
 
       <section>
-        <div className="bg-flame-gradient glow-flame rounded-[1.25rem] p-5 text-ink">
+        <SectionTitle title="Your own check-in" subtitle="You're in this too." />
+        <Link href="/" className="card block p-4 transition-colors hover:bg-surface-2">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-2xl font-extrabold tracking-tight">
+                {mySessionsToday}
+                <span className="text-muted"> / {Math.max(elapsedToday, 1)}</span>
+              </p>
+              <p className="mt-0.5 text-sm text-muted">
+                sessions checked in today · {myProgress.daysActive}/{PROGRAM_LENGTH} days
+                overall
+              </p>
+            </div>
+            <ChevronRightIcon className="text-faint" />
+          </div>
+          <div className="mt-3">
+            <ProgressBar value={percent(mySessionsToday, Math.max(elapsedToday, 1))} />
+          </div>
+        </Link>
+      </section>
+
+      <section>
+        <div className="bg-gold-gradient glow-gold rounded-[1.25rem] p-5 text-ink">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/70">
             Overall attendance
           </p>
@@ -82,25 +112,36 @@ export default function AdminDashboardPage() {
 
         <div className="mt-3 grid grid-cols-3 gap-3">
           <StatCard label="Check-ins" value={totals.checkedIn.toLocaleString()} />
-          <StatCard label="Shares" value={totals.shared.toLocaleString()} tone="violet" />
+          <StatCard label="Shares" value={totals.shared.toLocaleString()} tone="magenta" />
           <StatCard label="Likes" value={totals.liked.toLocaleString()} tone="mint" />
         </div>
       </section>
 
       <section>
-        <SectionTitle title="Today's sessions" />
+        <SectionTitle
+          title="Today's sessions"
+          action={
+            <Link
+              href="/admin/sessions"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-gold-soft"
+            >
+              All sessions
+              <ChevronRightIcon width={14} height={14} />
+            </Link>
+          }
+        />
         <div className="grid gap-2.5 sm:grid-cols-3">
           {sessions.map(({ session, status, checkedIn }) => (
             <div
               key={session.id}
-              className={`card p-4 ${status === "live" ? "border-flame/45" : ""}`}
+              className={`card p-4 ${status === "live" ? "border-gold/45" : ""}`}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-faint">
                   {shortTimeLabel(session.time)}
                 </span>
                 <Badge
-                  tone={status === "live" ? "flame" : status === "completed" ? "mint" : "violet"}
+                  tone={status === "live" ? "gold" : status === "completed" ? "mint" : "magenta"}
                 >
                   {status === "live" ? "Live" : status === "completed" ? "Completed" : "Upcoming"}
                 </Badge>
@@ -125,7 +166,7 @@ export default function AdminDashboardPage() {
           action={
             <Link
               href="/admin/teams"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-flame-soft"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-gold-soft"
             >
               Manage
               <ChevronRightIcon width={14} height={14} />

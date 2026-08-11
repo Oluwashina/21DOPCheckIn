@@ -81,10 +81,10 @@ export default function ProfilePage() {
             {currentUser.name}
           </h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <Badge tone={currentUser.role === "member" ? "muted" : "violet"}>
+            <Badge tone={currentUser.role === "member" ? "muted" : "magenta"}>
               {ROLE_LABEL[currentUser.role]}
             </Badge>
-            {team ? <Badge tone="flame">{team.name}</Badge> : null}
+            {team ? <Badge tone="gold">{team.name}</Badge> : null}
           </div>
         </div>
       </section>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             </p>
           </div>
           <div>
-            <p className="text-2xl font-extrabold text-gradient-flame">
+            <p className="text-2xl font-extrabold text-gradient-gold">
               {progress.streak}
             </p>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
@@ -122,7 +122,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={startEditing}
-                className="text-sm font-semibold text-flame-soft"
+                className="text-sm font-semibold text-gold-soft"
               >
                 Edit
               </button>

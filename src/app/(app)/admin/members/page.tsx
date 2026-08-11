@@ -201,7 +201,7 @@ export default function AdminMembersPage() {
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
-                      <Badge tone={user.role === "member" ? "muted" : "violet"}>
+                      <Badge tone={user.role === "member" ? "muted" : "magenta"}>
                         {ROLE_OPTIONS.find((option) => option.value === user.role)?.label}
                       </Badge>
                       <span className="text-[11px] text-faint">
@@ -252,7 +252,7 @@ export default function AdminMembersPage() {
                         <label className="flex items-center gap-2.5 text-sm font-semibold">
                           <input
                             type="checkbox"
-                            className="h-5 w-5 accent-[color:var(--color-flame)]"
+                            className="h-5 w-5 accent-[color:var(--color-gold)]"
                             checked={user.active}
                             onChange={(event) =>
                               void updateUser(user.id, { active: event.target.checked })

@@ -15,6 +15,7 @@ import {
   PROGRAM_END_DATE,
   PROGRAM_LENGTH,
   PROGRAM_START_DATE,
+  TEAM_NAMES,
   todayISO,
   toISODate,
 } from "../src/lib/program";
@@ -24,6 +25,7 @@ import {
   getCurrentDay,
   getMemberProgress,
   getMemberRowsForSession,
+  getParticipants,
   getProgramTotals,
   getSessionsForDay,
   getTeamAttendanceRate,
@@ -46,7 +48,10 @@ function check(label: string, condition: boolean, detail?: unknown) {
 async function main() {
   console.log("\nSEED DATA");
   let db = await mockAdapter.loadDatabase();
-  check("10 service teams", db.teams.length === 10, db.teams.length);
+  check(`${TEAM_NAMES.length} service teams`, db.teams.length === TEAM_NAMES.length, db.teams.length);
+  check("every configured team exists",
+    TEAM_NAMES.every((name) => db.teams.some((t) => t.name === name)),
+    TEAM_NAMES.filter((name) => !db.teams.some((t) => t.name === name)));
   check(`${PROGRAM_LENGTH} check-in days`, db.days.length === PROGRAM_LENGTH, db.days.length);
   check(
     `${PROGRAM_LENGTH * 3} sessions (3 per day)`,
@@ -197,6 +202,26 @@ async function main() {
   check("programme totals populated",
     totals.checkedIn > 0 && totals.shared > 0 && totals.liked > 0 && totals.attendanceRate > 0,
     totals);
+
+  console.log("\nADMIN TAKES PART TOO");
+  const adminUser = db.users.find((u) => u.email === DEMO_ADMIN_EMAIL)!;
+  check("admin counts as a participant", getParticipants(db).some((u) => u.id === adminUser.id));
+
+  const totalsBeforeAdmin = getProgramTotals(db);
+  db = await mockAdapter.saveCheckIn(adminUser.id, target.id, {
+    checked_in: true,
+    shared_link: true,
+    liked_youtube: false,
+  });
+  check("admin can check in", findCheckIn(db, adminUser.id, target.id)?.checked_in === true);
+  check("admin check-in lands in the programme totals",
+    getProgramTotals(db).checkedIn === totalsBeforeAdmin.checkedIn + 1);
+  check("admin has their own progress", getMemberProgress(db, adminUser.id).sessionsAttended === 1);
+
+  db = await mockAdapter.updateUser(adminUser.id, { team_id: member.team_id });
+  check("an admin who joins a team appears on its roster",
+    getTeamMembers(db, member.team_id!).some((u) => u.id === adminUser.id));
+  db = await mockAdapter.updateUser(adminUser.id, { team_id: null });
 
   console.log("\nREPORTING");
   const csv = toCSV(["Team", "Rate"], db.teams.map((t) => [t.name, getTeamAttendanceRate(db, t.id)]));

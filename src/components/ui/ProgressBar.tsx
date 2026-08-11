@@ -1,19 +1,19 @@
 export function ProgressBar({
   value,
-  tone = "flame",
+  tone = "gold",
   height = "h-2",
   label,
 }: {
   /** 0–100 */
   value: number;
-  tone?: "flame" | "violet" | "mint";
+  tone?: "gold" | "magenta" | "mint";
   height?: string;
   label?: string;
 }) {
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
   const fill = {
-    flame: "bg-flame-gradient",
-    violet: "bg-violet-gradient",
+    gold: "bg-gold-gradient",
+    magenta: "bg-magenta-gradient",
     mint: "bg-mint",
   }[tone];
 
@@ -62,9 +62,9 @@ export function ProgressRing({
     <div className="relative inline-flex items-center justify-center">
       <svg width={size} height={size} className="-rotate-90">
         <defs>
-          <linearGradient id="ring-flame" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffd96b" />
-            <stop offset="100%" stopColor="#f5a524" />
+          <linearGradient id="ring-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fff3bf" />
+            <stop offset="100%" stopColor="#ffc533" />
           </linearGradient>
         </defs>
         <circle
@@ -79,7 +79,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="url(#ring-flame)"
+          stroke="url(#ring-gold)"
           strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"

@@ -41,6 +41,10 @@ export const TEAM_NAMES = [
   "Elites",
   "Marshalls",
   "Amiables",
+  "Data",
+  "Welcome and Integration",
+  "Tribe Leaders",
+  "CEM",
 ];
 
 /** `yyyy-mm-dd` for a date, in local time (never UTC-shifted). */

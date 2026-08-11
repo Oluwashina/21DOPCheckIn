@@ -30,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-flame" />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-gold" />
           <p className="text-sm text-muted">Loading {PROGRAM_NAME}…</p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       : "text-muted hover:bg-surface/60 hover:text-text"
                   }`}
                 >
-                  <ItemIcon className={active ? "text-flame" : ""} />
+                  <ItemIcon className={active ? "text-gold" : ""} />
                   {item.label}
                 </Link>
               );
@@ -110,7 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-colors ${
-                  active ? "text-flame" : "text-faint"
+                  active ? "text-gold" : "text-faint"
                 }`}
               >
                 <ItemIcon width={22} height={22} />

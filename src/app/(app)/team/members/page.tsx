@@ -109,7 +109,7 @@ function MyTeam() {
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge tone="muted">{members.length} members</Badge>
-          <Badge tone="flame">Day {day.day_number} of {PROGRAM_LENGTH}</Badge>
+          <Badge tone="gold">Day {day.day_number} of {PROGRAM_LENGTH}</Badge>
         </div>
       </section>
 
@@ -162,7 +162,7 @@ function MyTeam() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-[15px] font-bold">{row.user.name}</p>
                       {row.user.id === team.team_lead_id ? (
-                        <Badge tone="violet">Lead</Badge>
+                        <Badge tone="magenta">Lead</Badge>
                       ) : null}
                       {!row.user.active ? <Badge tone="muted">Inactive</Badge> : null}
                     </div>
@@ -187,7 +187,7 @@ function MyTeam() {
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p className="text-lg font-extrabold text-gradient-flame">
+                    <p className="text-lg font-extrabold text-gradient-gold">
                       {row.progress.percent}%
                     </p>
                     <p className="text-[11px] text-faint">

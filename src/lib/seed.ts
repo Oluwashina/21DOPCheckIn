@@ -53,6 +53,10 @@ const TEAM_PROFILE: Record<string, { size: number; strength: number }> = {
   Elites: { size: 20, strength: 0.82 },
   Marshalls: { size: 23, strength: 0.76 },
   Amiables: { size: 17, strength: 0.89 },
+  Data: { size: 12, strength: 0.9 },
+  "Welcome and Integration": { size: 26, strength: 0.83 },
+  "Tribe Leaders": { size: 20, strength: 0.86 },
+  CEM: { size: 15, strength: 0.8 },
 };
 
 export const DEMO_ADMIN_EMAIL = "admin@thenewchurch.org";

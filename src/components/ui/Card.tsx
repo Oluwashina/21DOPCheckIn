@@ -43,12 +43,12 @@ export function StatCard({
   label: string;
   value: ReactNode;
   hint?: string;
-  tone?: "default" | "flame" | "violet" | "mint";
+  tone?: "default" | "gold" | "magenta" | "mint";
 }) {
   const toneClass = {
     default: "text-text",
-    flame: "text-flame-soft",
-    violet: "text-violet",
+    gold: "text-gold-soft",
+    magenta: "text-magenta",
     mint: "text-mint",
   }[tone];
 

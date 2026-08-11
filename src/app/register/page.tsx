@@ -57,7 +57,7 @@ export default function RegisterPage() {
             {CHURCH_NAME}
           </p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
-            Join <span className="text-gradient-flame">21 Days of Power</span>
+            Join <span className="text-gradient-gold">21 Days of Power</span>
           </h1>
           <p className="mt-2 text-[15px] text-muted">
             Three details and you&apos;re in. Takes about 20 seconds.
@@ -102,7 +102,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-muted">
             Already registered?{" "}
-            <Link href="/login" className="font-semibold text-flame-soft">
+            <Link href="/login" className="font-semibold text-gold-soft">
               Sign in
             </Link>
           </p>

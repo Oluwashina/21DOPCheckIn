@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { ChevronRightIcon, FlameIcon } from "@/components/icons";
 import { SessionCard } from "@/components/SessionCard";
@@ -37,11 +36,6 @@ function greeting(now: Date): string {
 
 export default function HomePage() {
   const { db, currentUser, now } = useStore();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (currentUser?.role === "admin") router.replace("/admin");
-  }, [currentUser, router]);
 
   const view = useMemo(() => {
     if (!db || !currentUser) return null;
@@ -108,11 +102,11 @@ export default function HomePage() {
             </>
           )}
         </h1>
-        <p className="mt-1.5 text-sm font-semibold text-flame-soft">{PROGRAM_THEME}</p>
+        <p className="mt-1.5 text-sm font-semibold text-gold-soft">{PROGRAM_THEME}</p>
         <div className="mt-2.5 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted">{formatLongDate(day.date)}</span>
           {progress.streak > 0 ? (
-            <Badge tone="flame">
+            <Badge tone="gold">
               <FlameIcon width={12} height={12} />
               {progress.streak}-day streak
             </Badge>
@@ -165,7 +159,7 @@ export default function HomePage() {
           action={
             <Link
               href="/progress"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-flame-soft"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-gold-soft"
             >
               View all
               <ChevronRightIcon width={14} height={14} />
@@ -181,7 +175,7 @@ export default function HomePage() {
               </p>
               <p className="mt-0.5 text-sm text-muted">days you&apos;ve shown up</p>
             </div>
-            <p className="text-2xl font-extrabold text-gradient-flame">
+            <p className="text-2xl font-extrabold text-gradient-gold">
               {progress.percent}%
             </p>
           </div>

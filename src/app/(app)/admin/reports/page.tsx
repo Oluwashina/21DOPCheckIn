@@ -217,7 +217,7 @@ export default function AdminReportsPage() {
                 <Card key={row.team.id}>
                   <div className="flex items-center justify-between gap-3">
                     <p className="truncate font-bold">{row.team.name}</p>
-                    <p className="shrink-0 text-sm font-extrabold text-gradient-flame">
+                    <p className="shrink-0 text-sm font-extrabold text-gradient-gold">
                       {row.rate}%
                     </p>
                   </div>

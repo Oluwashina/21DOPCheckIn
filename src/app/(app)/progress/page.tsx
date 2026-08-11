@@ -35,8 +35,8 @@ export default function ProgressPage() {
   const leadingOffset = firstDay ? (fromISODate(firstDay.date).getDay() + 6) % 7 : 0;
 
   const stats = [
-    { label: "Sessions attended", value: progress.sessionsAttended, tone: "flame" as const },
-    { label: "Shared", value: progress.shared, tone: "violet" as const },
+    { label: "Sessions attended", value: progress.sessionsAttended, tone: "gold" as const },
+    { label: "Shared", value: progress.shared, tone: "magenta" as const },
     { label: "YouTube likes", value: progress.liked, tone: "mint" as const },
   ];
 
@@ -70,7 +70,7 @@ export default function ProgressPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-flame/30 bg-flame/10 px-3 py-1.5 text-xs font-bold text-flame-soft">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-xs font-bold text-gold-soft">
                 <FlameIcon width={13} height={13} />
                 {progress.streak} day streak
               </span>
@@ -138,13 +138,13 @@ export default function ProgressPage() {
                       : attended > 0
                         ? "border-transparent text-ink"
                         : "border-line bg-surface-2 text-faint"
-                  } ${isToday ? "ring-2 ring-flame ring-offset-2 ring-offset-surface" : ""}`}
+                  } ${isToday ? "ring-2 ring-gold ring-offset-2 ring-offset-surface" : ""}`}
                   style={
                     attended > 0 && !pending
                       ? {
-                          backgroundImage: `linear-gradient(140deg, rgba(255,217,107,${
+                          backgroundImage: `linear-gradient(140deg, rgba(255,243,191,${
                             0.5 + intensity * 0.5
-                          }), rgba(245,165,36,${0.5 + intensity * 0.5}))`,
+                          }), rgba(255,197,51,${0.5 + intensity * 0.5}))`,
                         }
                       : undefined
                   }
@@ -164,7 +164,7 @@ export default function ProgressPage() {
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-[11px] text-faint">
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded bg-flame-gradient" /> Showed up
+              <span className="h-3 w-3 rounded bg-gold-gradient" /> Showed up
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded border border-line bg-surface-2" /> Missed

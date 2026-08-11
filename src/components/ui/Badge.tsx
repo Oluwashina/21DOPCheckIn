@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 
-type Tone = "neutral" | "flame" | "violet" | "mint" | "muted" | "rose";
+type Tone = "neutral" | "gold" | "magenta" | "mint" | "muted" | "rose";
 
 const TONES: Record<Tone, string> = {
   neutral: "bg-surface-3 text-text border-line",
-  flame: "bg-flame/15 text-flame-soft border-flame/30",
-  violet: "bg-violet/15 text-violet border-violet/30",
+  gold: "bg-gold/15 text-gold-soft border-gold/30",
+  magenta: "bg-magenta/15 text-magenta border-magenta/40",
   mint: "bg-mint/15 text-mint border-mint/30",
   muted: "bg-surface-2 text-faint border-line",
   rose: "bg-rose/15 text-rose border-rose/30",
@@ -31,8 +31,8 @@ export function Badge({
 
 export function LiveDot() {
   return (
-    <span className="relative inline-flex h-2 w-2 text-flame">
-      <span className="absolute inset-0 rounded-full bg-flame" />
+    <span className="relative inline-flex h-2 w-2 text-gold">
+      <span className="absolute inset-0 rounded-full bg-gold" />
       <span className="pulse-ring absolute inset-0 rounded-full" />
     </span>
   );

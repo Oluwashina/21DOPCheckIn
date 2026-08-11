@@ -1,26 +1,31 @@
 @import "tailwindcss";
 
 /*
- * Palette follows The New's brand: gold logo mark on near-black, with the
- * plum and magenta of the 21 Days of Power artwork as supporting colours.
- * `flame` is the brand gold — it carries every primary action.
+ * The New's brand palette.
+ *   Primary   gold #FFC533, black #000000, white #FFFFFF
+ *   Secondary navy #1F3D7B, magenta #E82D88, cream #FFF3BF, peach #FDD9B9
+ * Gold carries every primary action; the surfaces are neutral greys lifted off
+ * brand black so cards separate without introducing a colour of their own.
  */
 @theme {
-  --color-ink: #08040e;
-  --color-surface: #150e1f;
-  --color-surface-2: #1e1529;
-  --color-surface-3: #2a1f38;
-  --color-line: #372a48;
+  --color-ink: #000000;
+  --color-surface: #101013;
+  --color-surface-2: #17171c;
+  --color-surface-3: #212128;
+  --color-line: #2c2c34;
 
-  --color-flame: #ffc62b;
-  --color-flame-soft: #ffd96b;
-  --color-violet: #b06bff;
+  --color-gold: #ffc533;
+  --color-gold-soft: #ffd873;
+  --color-navy: #1f3d7b;
+  --color-magenta: #e82d88;
+  --color-cream: #fff3bf;
+  --color-peach: #fdd9b9;
   --color-mint: #34d399;
-  --color-rose: #ff4d6d;
+  --color-rose: #f2555a;
 
-  --color-text: #f8f5fb;
-  --color-muted: #a99cba;
-  --color-faint: #74688a;
+  --color-text: #ffffff;
+  --color-muted: #a1a1ac;
+  --color-faint: #7d7d89;
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
@@ -47,8 +52,8 @@
   }
 
   ::selection {
-    background: var(--color-flame);
-    color: #fff;
+    background: var(--color-gold);
+    color: var(--color-ink);
   }
 
   input,
@@ -60,28 +65,23 @@
 }
 
 @layer utilities {
-  .text-gradient-flame {
-    background: linear-gradient(100deg, var(--color-flame-soft), var(--color-flame));
+  .text-gradient-gold {
+    background: linear-gradient(100deg, var(--color-cream), var(--color-gold));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  .bg-flame-gradient {
-    background-image: linear-gradient(100deg, #ffd96b, #f5a524);
+  .bg-gold-gradient {
+    background-image: linear-gradient(100deg, #ffd873, #ffc533);
   }
 
-  .bg-violet-gradient {
-    background-image: linear-gradient(100deg, #c084fc, #8b3fbf);
+  .bg-magenta-gradient {
+    background-image: linear-gradient(100deg, #f0569f, #e82d88);
   }
 
-  .glow-flame {
-    box-shadow: 0 12px 40px -12px rgba(255, 198, 43, 0.5);
-  }
-
-  /* Gold is a light surface — anything sitting on it needs ink, not white. */
-  .on-flame {
-    color: var(--color-ink);
+  .glow-gold {
+    box-shadow: 0 12px 40px -12px rgba(255, 197, 51, 0.5);
   }
 
   .card {
@@ -111,9 +111,9 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(60% 40% at 15% -5%, rgba(255, 198, 43, 0.14), transparent 70%),
-    radial-gradient(55% 40% at 90% 0%, rgba(176, 107, 255, 0.2), transparent 70%),
-    radial-gradient(45% 30% at 50% 100%, rgba(255, 77, 109, 0.1), transparent 70%);
+    radial-gradient(60% 40% at 15% -5%, rgba(255, 197, 51, 0.13), transparent 70%),
+    radial-gradient(55% 40% at 90% 0%, rgba(31, 61, 123, 0.42), transparent 70%),
+    radial-gradient(45% 30% at 50% 100%, rgba(232, 45, 136, 0.1), transparent 70%);
 }
 
 @keyframes pulse-ring {

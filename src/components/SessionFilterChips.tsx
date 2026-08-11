@@ -23,7 +23,7 @@ export function Chips({
             onClick={() => onChange(option.value)}
             className={`shrink-0 rounded-full border px-3.5 py-2 text-[13px] font-semibold transition-colors ${
               active
-                ? "border-flame/50 bg-flame/15 text-flame-soft"
+                ? "border-gold/50 bg-gold/15 text-gold-soft"
                 : "border-line bg-surface text-muted hover:bg-surface-2"
             }`}
           >

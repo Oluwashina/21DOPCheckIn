@@ -17,6 +17,7 @@ import {
 import {
   getCurrentDay,
   getMemberRowsForSession,
+  getParticipants,
   getSessionsForDay,
   percent,
 } from "@/lib/stats";
@@ -34,7 +35,7 @@ export default function AdminSessionsPage() {
     const day = db.days.find((item) => item.id === activeDayId);
     if (!day) return null;
 
-    const participants = db.users.filter((user) => user.role !== "admin" && user.active);
+    const participants = getParticipants(db);
 
     return {
       day,
@@ -111,7 +112,7 @@ export default function AdminSessionsPage() {
                 </div>
                 <Badge
                   tone={
-                    status === "live" ? "flame" : status === "completed" ? "mint" : "violet"
+                    status === "live" ? "gold" : status === "completed" ? "mint" : "magenta"
                   }
                 >
                   {status === "live" ? "Live" : status === "completed" ? "Completed" : "Upcoming"}

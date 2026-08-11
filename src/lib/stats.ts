@@ -81,11 +81,14 @@ export function getTeamById(db: Database, teamId: string | null): Team | undefin
   return db.teams.find((team) => team.id === teamId);
 }
 
-/** Everyone who belongs to a team, lead first, then alphabetical. */
+/**
+ * Everyone who belongs to a team, lead first, then alphabetical. Role does not
+ * matter here — an admin who joins a service team takes part like anyone else.
+ */
 export function getTeamMembers(db: Database, teamId: string): User[] {
   const team = getTeamById(db, teamId);
   return db.users
-    .filter((user) => user.team_id === teamId && user.role !== "admin")
+    .filter((user) => user.team_id === teamId)
     .sort((a, b) => {
       if (a.id === team?.team_lead_id) return -1;
       if (b.id === team?.team_lead_id) return 1;
@@ -231,11 +234,16 @@ export function getTeamAttendanceRate(
   return percent(totals.checkedIn, members.length * elapsed.length);
 }
 
+/** Everyone expected to show up — admins included, since they take part too. */
+export function getParticipants(db: Database): User[] {
+  return db.users.filter((user) => user.active);
+}
+
 export function getProgramTotals(
   db: Database,
   now: Date = new Date(),
 ): AccountabilityTotals & { attendanceRate: number } {
-  const participants = db.users.filter((user) => user.role !== "admin" && user.active);
+  const participants = getParticipants(db);
   const elapsed = getElapsedSessions(db, now);
   const totals = tallyCheckIns(
     db,
