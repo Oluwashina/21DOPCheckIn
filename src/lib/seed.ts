@@ -1,10 +1,10 @@
 import {
   PROGRAM_LENGTH,
+  PROGRAM_START_DATE,
   SESSION_BLUEPRINT,
   TEAM_NAMES,
-  addDays,
+  buildProgramDates,
   getSessionStatus,
-  toISODate,
 } from "./program";
 import type { CheckIn, Database, Day, Session, Team, User } from "./types";
 
@@ -60,15 +60,15 @@ export const DEMO_LEAD_EMAIL = "lead.thenewmusic@thenewchurch.org";
 export const DEMO_MEMBER_EMAIL = "john-doe@thenewchurch.org";
 
 /**
- * Builds the full demo dataset. Day 1 is anchored 7 days before today so the
- * app always opens on Day 8 of 21 for a fresh install.
+ * Builds the full demo dataset against the real programme dates
+ * (10–30 August 2026), so the day number always matches the actual calendar.
  */
 export function buildSeedDatabase(now: Date = new Date()): Database {
   const random = mulberry32(21_2026);
   const nowISO = now.toISOString();
 
-  const programStartDate = addDays(now, -7);
-  const program_start = toISODate(programStartDate);
+  const programDates = buildProgramDates();
+  const program_start = PROGRAM_START_DATE;
 
   const days: Day[] = [];
   const sessions: Session[] = [];
@@ -78,7 +78,7 @@ export function buildSeedDatabase(now: Date = new Date()): Database {
     const day: Day = {
       id: `day-${dayNumber}`,
       day_number: dayNumber,
-      date: toISODate(addDays(programStartDate, i)),
+      date: programDates[i],
     };
     days.push(day);
 

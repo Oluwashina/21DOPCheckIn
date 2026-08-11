@@ -8,9 +8,11 @@ import {
   formatLongDate,
   formatShortDate,
   getSessionStatus,
+  PROGRAM_DATE_RANGE,
   PROGRAM_LENGTH,
   SESSION_BLUEPRINT,
   shortTimeLabel,
+  YOUTUBE_CHANNEL_NAME,
 } from "@/lib/program";
 import {
   getCurrentDay,
@@ -59,6 +61,9 @@ export default function AdminSessionsPage() {
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Sessions</h1>
         <p className="mt-1 text-sm text-muted">
           Three sessions a day, {PROGRAM_LENGTH} days, {db.sessions.length} sessions total.
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          {PROGRAM_DATE_RANGE} · streaming on YouTube, {YOUTUBE_CHANNEL_NAME}
         </p>
       </section>
 

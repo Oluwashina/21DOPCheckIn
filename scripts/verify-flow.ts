@@ -6,7 +6,18 @@
  * Run with: npx tsx scripts/verify-flow.ts
  */
 import { mockAdapter } from "../src/lib/data/mock-adapter";
-import { getCurrentDayNumber, getSessionStatus, PROGRAM_LENGTH } from "../src/lib/program";
+import {
+  getDayNumberForDate,
+  getSessionStatus,
+  isWeekend,
+  fromISODate,
+  PROGRAM_DATES,
+  PROGRAM_END_DATE,
+  PROGRAM_LENGTH,
+  PROGRAM_START_DATE,
+  todayISO,
+  toISODate,
+} from "../src/lib/program";
 import { DEMO_ADMIN_EMAIL, DEMO_LEAD_EMAIL, DEMO_MEMBER_EMAIL } from "../src/lib/seed";
 import {
   findCheckIn,
@@ -36,15 +47,55 @@ async function main() {
   console.log("\nSEED DATA");
   let db = await mockAdapter.loadDatabase();
   check("10 service teams", db.teams.length === 10, db.teams.length);
-  check("21 days", db.days.length === PROGRAM_LENGTH, db.days.length);
-  check("63 sessions (3 per day)", db.sessions.length === 63, db.sessions.length);
+  check(`${PROGRAM_LENGTH} check-in days`, db.days.length === PROGRAM_LENGTH, db.days.length);
+  check(
+    `${PROGRAM_LENGTH * 3} sessions (3 per day)`,
+    db.sessions.length === PROGRAM_LENGTH * 3,
+    db.sessions.length,
+  );
   check("every day has 3 sessions", db.days.every((d) => getSessionsForDay(db, d.id).length === 3));
   check("members exist on every team", db.teams.every((t) => getTeamMembers(db, t.id).length > 0));
   check("every team has a lead", db.teams.every((t) => Boolean(t.team_lead_id)));
-  check("check-in history seeded", db.check_ins.length > 1000, db.check_ins.length);
+  const elapsedSoFar = db.sessions.filter((s) =>
+    getSessionStatus(db.days.find((d) => d.id === s.day_id)!, s) !== "upcoming",
+  );
+  check(
+    "every session that has happened has check-in history",
+    elapsedSoFar.every((s) => db.check_ins.some((row) => row.session_id === s.id)),
+    `${elapsedSoFar.length} elapsed sessions, ${db.check_ins.length} rows`,
+  );
 
   const day = getCurrentDay(db);
-  check("programme opens on day 8", getCurrentDayNumber(db.program_start) === 8, day.day_number);
+  check("day 1 is the real programme start", db.program_start === PROGRAM_START_DATE, db.program_start);
+  // Independently walk back from the window's end to the last weekday.
+  const expectedLast = (() => {
+    const cursor = fromISODate(PROGRAM_END_DATE);
+    while (isWeekend(cursor)) cursor.setDate(cursor.getDate() - 1);
+    return toISODate(cursor);
+  })();
+  check("the last check-in day is the last weekday in the window",
+    db.days[db.days.length - 1].date === expectedLast,
+    `${db.days[db.days.length - 1].date} (expected ${expectedLast}, window ends ${PROGRAM_END_DATE})`);
+  check("no programme day falls outside the window",
+    db.days.every((d) => d.date >= PROGRAM_START_DATE && d.date <= PROGRAM_END_DATE));
+
+  check("no session lands on a weekend",
+    db.days.every((d) => !isWeekend(fromISODate(d.date))),
+    db.days.filter((d) => isWeekend(fromISODate(d.date))).map((d) => d.date));
+  check("days run in strict calendar order",
+    db.days.every((d, i) => i === 0 || d.date > db.days[i - 1].date));
+
+  const todayNumber = getDayNumberForDate(todayISO(), PROGRAM_DATES);
+  check(
+    todayNumber
+      ? `today is day ${todayNumber} of the programme`
+      : "today is a rest day, so the app falls back to the most recent day",
+    todayNumber ? day.day_number === todayNumber : day.date < todayISO(),
+    { today: todayISO(), showing: day.date },
+  );
+
+  check("evening session runs at 7pm per the flyer",
+    db.sessions.some((s) => s.slot === "power_night" && s.time === "19:00"));
 
   for (const [label, email, role] of [
     ["member", DEMO_MEMBER_EMAIL, "member"],

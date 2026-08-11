@@ -1,16 +1,25 @@
 # 21 Days of Power
 
+> **Thirsty Soul, Living Waters** · with Pastor Shola Okodugha
+> Streaming on YouTube — The New Church
+
 A mobile-first check-in and accountability app for **The New Church**'s 21 Days of Power
 programme. Members check in for each session in under 30 seconds, team leads see who
 showed up, and admins get a programme-wide view.
 
-Three sessions run every day for 21 days:
+Three sessions run each programme day, **Monday to Friday**:
 
 | Session | Time |
 | --- | --- |
 | Whirlwind of Testimonies | 7:00 AM |
 | Uncut Series | 1:00 PM |
-| The Power Night Series | 6:30 PM |
+| Evening Session | 7:00 PM |
+
+The programme window is **10 – 30 August 2026**. Saturdays and Sundays are not check-in
+days at all, which leaves **15 check-in days**, ending Friday 28 August. Weekends never
+count against a member's attendance or streak, and the app shows a rest-day screen on them.
+
+"21 Days of Power" is the campaign name; 15 is the number of days that carry sessions.
 
 Each session tracks three accountability items, stored separately: **checked in**,
 **shared the link**, and **liked the YouTube page**. A member can check in without having
@@ -23,8 +32,17 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The app seeds itself with demo data on first load, anchored so
-that today is **Day 8 of 21**.
+Open http://localhost:3000. The app seeds itself with demo data on first load, anchored to
+the real programme dates, so the day number always matches the actual calendar.
+
+The whole schedule lives in one place, `src/lib/program.ts`: the start and end dates,
+session names and times, theme, minister, and the YouTube channel. The number of days is
+derived from that window rather than hardcoded, so moving the end date is a one-line
+change. Set `RUNS_ON_WEEKENDS = true` to include Saturdays and Sundays, or
+`YOUTUBE_CHANNEL_URL` to turn on the "watch and like" links.
+
+Day numbers are read from the generated schedule, never calculated as "days since the
+start" — with weekends skipped, those two disagree (Monday 17 August is Day 6, not Day 8).
 
 ### Demo accounts
 
@@ -103,4 +121,5 @@ No chat, payments, CRM, sermon management, ticketing, social feed or messaging. 
 does one thing: show up, check in, stay accountable.
 
 Notifications are future-ready but not wired up — session times and statuses are already
-computed, so reminders ("Power Night starts in 30 minutes") only need a delivery channel.
+computed, so reminders ("the Evening Session starts in 30 minutes") only need a delivery
+channel.

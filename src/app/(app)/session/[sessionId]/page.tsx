@@ -17,6 +17,7 @@ import { Badge, Button, Card, LiveDot } from "@/components/ui";
 import {
   formatLongDate,
   getSessionStatus,
+  PROGRAM_LENGTH,
   shortTimeLabel,
   todayISO,
 } from "@/lib/program";
@@ -136,7 +137,9 @@ export default function SessionCheckInPage() {
 
       <div className="mb-5">
         <div className="mb-2.5 flex flex-wrap items-center gap-2">
-          <Badge tone="muted">Day {day.day_number} of 21</Badge>
+          <Badge tone="muted">
+            Day {day.day_number} of {PROGRAM_LENGTH}
+          </Badge>
           {status === "live" ? (
             <Badge tone="flame">
               <LiveDot />
@@ -188,7 +191,7 @@ export default function SessionCheckInPage() {
                   transition={{ type: "spring", stiffness: 320, damping: 16 }}
                   className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-flame-gradient glow-flame"
                 >
-                  <CheckIcon width={30} height={30} strokeWidth={2.6} className="text-white" />
+                  <CheckIcon width={30} height={30} strokeWidth={2.6} className="text-ink" />
                 </motion.div>
                 <p className="text-xl font-extrabold tracking-tight">
                   You&apos;re checked in! 🔥
@@ -219,7 +222,7 @@ export default function SessionCheckInPage() {
                     <span
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors ${
                         active
-                          ? "bg-flame-gradient text-white"
+                          ? "bg-flame-gradient text-ink"
                           : "bg-surface-3 text-faint"
                       }`}
                     >
@@ -234,7 +237,7 @@ export default function SessionCheckInPage() {
                     <span
                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         active
-                          ? "border-flame bg-flame text-white"
+                          ? "border-flame bg-flame text-ink"
                           : "border-line bg-transparent"
                       }`}
                     >

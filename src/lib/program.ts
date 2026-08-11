@@ -1,8 +1,20 @@
 import type { Day, Session, SessionSlot, SessionStatus } from "./types";
 
 export const PROGRAM_NAME = "21 Days of Power";
+export const PROGRAM_THEME = "Thirsty Soul, Living Waters";
 export const CHURCH_NAME = "The New Church";
-export const PROGRAM_LENGTH = 21;
+export const MINISTER_NAME = "Pastor Shola Okodugha";
+
+/** The programme window: 10 to 30 August 2026, as advertised on the flyer. */
+export const PROGRAM_START_DATE = "2026-08-10";
+export const PROGRAM_END_DATE = "2026-08-30";
+
+/** Sessions run Monday to Friday. Weekends are not check-in days at all. */
+export const RUNS_ON_WEEKENDS = false;
+
+export const YOUTUBE_CHANNEL_NAME = "The New Church";
+/** Set this to the channel URL to turn on the "Watch & like" buttons. */
+export const YOUTUBE_CHANNEL_URL = "";
 
 /** Minutes a session stays "live" after its start time. */
 export const SESSION_DURATION_MINUTES = 90;
@@ -15,7 +27,7 @@ export const SESSION_BLUEPRINT: {
 }[] = [
   { slot: "whirlwind", name: "Whirlwind of Testimonies", time: "07:00", label: "7:00 AM" },
   { slot: "uncut", name: "Uncut Series", time: "13:00", label: "1:00 PM" },
-  { slot: "power_night", name: "The Power Night Series", time: "18:30", label: "6:30 PM" },
+  { slot: "power_night", name: "Evening Session", time: "19:00", label: "7:00 PM" },
 ];
 
 export const TEAM_NAMES = [
@@ -53,6 +65,49 @@ export function addDays(date: Date, days: number): Date {
 export function todayISO(): string {
   return toISODate(new Date());
 }
+
+export function isWeekend(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
+/**
+ * Every check-in day in the programme window. Weekends are skipped entirely —
+ * they are not programme days, so they can never count as missed.
+ */
+export function buildProgramDates(
+  startISO: string = PROGRAM_START_DATE,
+  endISO: string = PROGRAM_END_DATE,
+): string[] {
+  const dates: string[] = [];
+  const end = fromISODate(endISO);
+  let cursor = fromISODate(startISO);
+
+  while (cursor <= end) {
+    if (RUNS_ON_WEEKENDS || !isWeekend(cursor)) dates.push(toISODate(cursor));
+    cursor = addDays(cursor, 1);
+  }
+
+  return dates;
+}
+
+export const PROGRAM_DATES = buildProgramDates();
+
+/** Number of check-in days — derived from the window, never hardcoded. */
+export const PROGRAM_LENGTH = PROGRAM_DATES.length;
+
+/** e.g. "10 – 31 August 2026". Derived, so it can never drift. */
+export const PROGRAM_DATE_RANGE = (() => {
+  const start = fromISODate(PROGRAM_START_DATE);
+  const end = fromISODate(PROGRAM_END_DATE);
+  const startMonth = start.toLocaleDateString("en-GB", { month: "long" });
+  const endMonth = end.toLocaleDateString("en-GB", { month: "long" });
+  const sameMonth = startMonth === endMonth && start.getFullYear() === end.getFullYear();
+
+  return sameMonth
+    ? `${start.getDate()} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`
+    : `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+})();
 
 export function shortTimeLabel(time: string): string {
   const [h, m] = time.split(":").map(Number);
@@ -106,12 +161,14 @@ export const SESSION_STATUS_LABEL: Record<SessionStatus, string> = {
 };
 
 /**
- * The day the program is currently on. Clamped to the program length so the
- * app stays usable before day 1 and after day 21.
+ * Day number for a calendar date, or `null` on a weekend or outside the
+ * programme. Day numbers come from the schedule, never from date arithmetic,
+ * because skipped weekends make the two disagree.
  */
-export function getCurrentDayNumber(programStart: string, now: Date = new Date()): number {
-  const start = fromISODate(programStart);
-  const today = fromISODate(toISODate(now));
-  const diff = Math.round((today.getTime() - start.getTime()) / 86_400_000);
-  return Math.min(Math.max(diff + 1, 1), PROGRAM_LENGTH);
+export function getDayNumberForDate(
+  dateISO: string,
+  dates: string[] = PROGRAM_DATES,
+): number | null {
+  const index = dates.indexOf(dateISO);
+  return index === -1 ? null : index + 1;
 }

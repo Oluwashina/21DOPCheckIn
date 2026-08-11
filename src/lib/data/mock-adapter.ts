@@ -2,7 +2,8 @@ import { buildSeedDatabase } from "../seed";
 import type { CheckInInput, Database, Team, User } from "../types";
 import type { DataAdapter, NewUserInput } from "./adapter";
 
-const STORAGE_KEY = "21dop:db:v1";
+/** Bump when the seed shape or programme dates change, to force a re-seed. */
+const STORAGE_KEY = "21dop:db:v4";
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";

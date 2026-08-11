@@ -7,16 +7,23 @@ import { useEffect, useMemo } from "react";
 import { ChevronRightIcon, FlameIcon } from "@/components/icons";
 import { SessionCard } from "@/components/SessionCard";
 import { Badge, Card, ProgressBar, SectionTitle } from "@/components/ui";
-import { formatLongDate, getSessionStatus, PROGRAM_LENGTH } from "@/lib/program";
+import {
+  formatLongDate,
+  getSessionStatus,
+  PROGRAM_LENGTH,
+  PROGRAM_THEME,
+} from "@/lib/program";
 import {
   findCheckIn,
   getCurrentDay,
   getMemberProgress,
   getMemberRowsForSession,
+  getNextProgramDay,
   getSessionsForDay,
   getTeamById,
   getTeamMembers,
   getTeamStatsForDay,
+  isRestDay,
   percent,
 } from "@/lib/stats";
 import { useStore } from "@/lib/store";
@@ -48,6 +55,8 @@ export default function HomePage() {
     return {
       day,
       team,
+      restDay: isRestDay(db, now),
+      nextDay: getNextProgramDay(db, now),
       teamToday: team ? getTeamStatsForDay(db, team.id, day.id) : null,
       progress: getMemberProgress(db, currentUser.id, now),
       sessions: sessions.map((session) => ({
@@ -68,7 +77,7 @@ export default function HomePage() {
 
   if (!view || !currentUser) return null;
 
-  const { day, progress, sessions, team, teamToday } = view;
+  const { day, progress, sessions, team, teamToday, restDay, nextDay } = view;
   const live = sessions.find((item) => item.status === "live");
   const nextUp = sessions.find((item) => item.status === "upcoming");
   const doneToday = sessions.filter((item) => item.checkIn?.checked_in).length;
@@ -89,9 +98,17 @@ export default function HomePage() {
           {greeting(now)}, {currentUser.name.split(" ")[0]}
         </p>
         <h1 className="mt-1 text-[34px] font-extrabold leading-[1.05] tracking-tight sm:text-[40px]">
-          Day {day.day_number}{" "}
-          <span className="text-muted">of {PROGRAM_LENGTH}</span>
+          {restDay ? (
+            <>
+              Rest day <span className="text-muted">🌿</span>
+            </>
+          ) : (
+            <>
+              Day {day.day_number} <span className="text-muted">of {PROGRAM_LENGTH}</span>
+            </>
+          )}
         </h1>
+        <p className="mt-1.5 text-sm font-semibold text-flame-soft">{PROGRAM_THEME}</p>
         <div className="mt-2.5 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted">{formatLongDate(day.date)}</span>
           {progress.streak > 0 ? (
@@ -104,10 +121,29 @@ export default function HomePage() {
         </div>
       </section>
 
+      {restDay ? (
+        <Card>
+          <p className="text-[15px] font-semibold">No sessions today — take a breath.</p>
+          <p className="mt-1 text-sm text-muted">
+            Sessions run Monday to Friday.{" "}
+            {nextDay
+              ? `Day ${nextDay.day_number} picks up on ${formatLongDate(nextDay.date)}.`
+              : `That's a wrap on all ${PROGRAM_LENGTH} days. Well done. 🔥`}
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            Missed something? You can still catch up on Day {day.day_number} below.
+          </p>
+        </Card>
+      ) : null}
+
       <section>
         <SectionTitle
-          title="Today's sessions"
-          subtitle={`${doneToday} of ${Math.max(elapsedToday, 1)} checked in so far`}
+          title={restDay ? `Day ${day.day_number} · catch up` : "Today's sessions"}
+          subtitle={
+            restDay
+              ? formatLongDate(day.date)
+              : `${doneToday} of ${Math.max(elapsedToday, 1)} checked in so far`
+          }
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sessions.map((item) => (
@@ -120,12 +156,12 @@ export default function HomePage() {
             />
           ))}
         </div>
-        <p className="mt-3 text-sm text-muted">{nudge} 🔥</p>
+        {restDay ? null : <p className="mt-3 text-sm text-muted">{nudge} 🔥</p>}
       </section>
 
       <section>
         <SectionTitle
-          title="My 21 days"
+          title="My progress"
           action={
             <Link
               href="/progress"

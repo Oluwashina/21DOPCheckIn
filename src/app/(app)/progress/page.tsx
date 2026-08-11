@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { FlameIcon } from "@/components/icons";
 import { Card, ProgressBar, ProgressRing, SectionTitle } from "@/components/ui";
-import { formatShortDate, PROGRAM_LENGTH } from "@/lib/program";
+import { formatShortDate, fromISODate, PROGRAM_LENGTH } from "@/lib/program";
 import { getCurrentDay, getMemberProgress, percent } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
@@ -30,6 +30,10 @@ export default function ProgressPage() {
   if (!data || !currentUser) return null;
   const { progress, currentDay } = data;
 
+  const firstDay = progress.perDay[0]?.day;
+  // Monday = 0, so the first square lands in the right weekday column.
+  const leadingOffset = firstDay ? (fromISODate(firstDay.date).getDay() + 6) % 7 : 0;
+
   const stats = [
     { label: "Sessions attended", value: progress.sessionsAttended, tone: "flame" as const },
     { label: "Shared", value: progress.shared, tone: "violet" as const },
@@ -40,7 +44,7 @@ export default function ProgressPage() {
     <div className="space-y-7 pb-4">
       <section>
         <h1 className="text-[32px] font-extrabold leading-tight tracking-tight">
-          My 21 Days
+          My Progress
         </h1>
         <p className="mt-1 text-sm text-muted">
           {encouragement(progress.daysActive, progress.daysElapsed, progress.streak)}
@@ -103,11 +107,20 @@ export default function ProgressPage() {
 
       <section>
         <SectionTitle
-          title="Your 21 days"
-          subtitle="Each square is a day — filled means you showed up."
+          title="Your programme"
+          subtitle="Each row is a week, Monday to Friday. Filled means you showed up."
         />
         <Card>
-          <div className="grid grid-cols-7 gap-2 sm:gap-2.5">
+          <div className="mb-2 grid grid-cols-5 gap-2 text-center text-[10px] font-bold uppercase tracking-wide text-faint sm:gap-2.5">
+            {["Mon", "Tue", "Wed", "Thu", "Fri"].map((label) => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
+          <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
+            {/* Keep day 1 under its real weekday column. */}
+            {Array.from({ length: leadingOffset }).map((_, index) => (
+              <span key={`offset-${index}`} aria-hidden />
+            ))}
             {progress.perDay.map(({ day, attended, elapsed }) => {
               const isToday = day.day_number === currentDay.day_number;
               const pending = elapsed === 0;
@@ -123,15 +136,15 @@ export default function ProgressPage() {
                     pending
                       ? "border-line bg-surface-2/40 text-faint"
                       : attended > 0
-                        ? "border-transparent text-white"
+                        ? "border-transparent text-ink"
                         : "border-line bg-surface-2 text-faint"
                   } ${isToday ? "ring-2 ring-flame ring-offset-2 ring-offset-surface" : ""}`}
                   style={
                     attended > 0 && !pending
                       ? {
-                          backgroundImage: `linear-gradient(140deg, rgba(255,138,61,${
-                            0.45 + intensity * 0.55
-                          }), rgba(255,90,15,${0.45 + intensity * 0.55}))`,
+                          backgroundImage: `linear-gradient(140deg, rgba(255,217,107,${
+                            0.5 + intensity * 0.5
+                          }), rgba(245,165,36,${0.5 + intensity * 0.5}))`,
                         }
                       : undefined
                   }

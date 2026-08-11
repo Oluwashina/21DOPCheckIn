@@ -68,14 +68,14 @@ export default function AdminDashboardPage() {
       </section>
 
       <section>
-        <div className="bg-flame-gradient glow-flame rounded-[1.25rem] p-5 text-white">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/80">
+        <div className="bg-flame-gradient glow-flame rounded-[1.25rem] p-5 text-ink">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/70">
             Overall attendance
           </p>
           <p className="mt-1 text-5xl font-extrabold tracking-tight">
             {totals.attendanceRate}%
           </p>
-          <p className="mt-1.5 text-sm text-white/85">
+          <p className="mt-1.5 text-sm text-ink/75">
             {participants} people across {teams.length} service teams
           </p>
         </div>

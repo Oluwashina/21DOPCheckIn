@@ -1,4 +1,4 @@
-import { getCurrentDayNumber, getSessionStatus, SESSION_BLUEPRINT } from "./program";
+import { getSessionStatus, SESSION_BLUEPRINT, toISODate } from "./program";
 import type { CheckIn, Database, Day, Session, Team, User } from "./types";
 
 export interface AccountabilityTotals {
@@ -39,9 +39,29 @@ export function getDayByNumber(db: Database, dayNumber: number): Day | undefined
   return db.days.find((day) => day.day_number === dayNumber);
 }
 
+/**
+ * The day the app should show. On a weekend (or after the programme ends) that
+ * is the most recent programme day, so leads can still review it and members
+ * can still catch up on a session they missed.
+ */
 export function getCurrentDay(db: Database, now: Date = new Date()): Day {
-  const dayNumber = getCurrentDayNumber(db.program_start, now);
-  return getDayByNumber(db, dayNumber) ?? db.days[0];
+  const today = toISODate(now);
+  const exact = db.days.find((day) => day.date === today);
+  if (exact) return exact;
+
+  const past = [...db.days].reverse().find((day) => day.date < today);
+  return past ?? db.days[0];
+}
+
+/** True when today carries no sessions — a weekend, or outside the programme. */
+export function isRestDay(db: Database, now: Date = new Date()): boolean {
+  const today = toISODate(now);
+  return !db.days.some((day) => day.date === today);
+}
+
+export function getNextProgramDay(db: Database, now: Date = new Date()): Day | undefined {
+  const today = toISODate(now);
+  return db.days.find((day) => day.date > today);
 }
 
 export function getSessionsForDay(db: Database, dayId: string): Session[] {

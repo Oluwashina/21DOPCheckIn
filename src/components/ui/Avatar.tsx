@@ -1,9 +1,10 @@
+/** Deep tones only — initials are white, so gold would wash out. */
 const PALETTE = [
-  "from-[#ff8a3d] to-[#ff5a0f]",
-  "from-[#8f74ff] to-[#6a45ff]",
-  "from-[#2fd6a5] to-[#12a67d]",
-  "from-[#ff5c8a] to-[#e0316a]",
-  "from-[#48b8ff] to-[#1f7ee0]",
+  "from-[#b06bff] to-[#7b2fbf]",
+  "from-[#ff4d6d] to-[#c31c46]",
+  "from-[#c98a10] to-[#8f5f05]",
+  "from-[#12a67d] to-[#0a6b52]",
+  "from-[#5b6bff] to-[#2f36b8]",
 ];
 
 export function initialsOf(name: string): string {

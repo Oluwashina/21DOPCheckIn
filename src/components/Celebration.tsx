@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 const PIECES = Array.from({ length: 14 }, (_, index) => index);
-const COLORS = ["#ff8a3d", "#ff5a0f", "#8f74ff", "#2fd6a5", "#ffd166"];
+const COLORS = ["#ffc62b", "#ffd96b", "#b06bff", "#ff4d6d", "#f8f5fb"];
 
 /** Small confetti burst used when a check-in is submitted. */
 export function Celebration() {

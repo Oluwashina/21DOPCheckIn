@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
+import { Wordmark } from "./Logo";
 import { isNavItemActive, navForRole } from "./nav";
 import { Avatar } from "./ui";
-import { PROGRAM_NAME } from "@/lib/program";
+import { PROGRAM_LENGTH, PROGRAM_NAME } from "@/lib/program";
 import { getCurrentDay } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
@@ -44,12 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative z-10 mx-auto flex w-full max-w-6xl lg:gap-8 lg:px-6">
         <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col py-8 lg:flex">
           <Link href="/" className="mb-8 block">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-faint">
-              The New Church
-            </p>
-            <p className="text-lg font-extrabold leading-tight">
-              21 Days of <span className="text-gradient-flame">Power</span>
-            </p>
+            <Wordmark />
           </Link>
 
           <nav className="flex flex-col gap-1">
@@ -88,17 +84,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="min-w-0 flex-1 pb-28 lg:pb-10">
           <header className="sticky top-0 z-20 border-b border-line/60 bg-ink/80 px-4 py-3 backdrop-blur-xl lg:hidden">
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-faint">
-                  The New Church
-                </p>
-                <p className="text-[15px] font-extrabold leading-tight">
-                  21 Days of <span className="text-gradient-flame">Power</span>
-                </p>
-              </div>
+              <Wordmark compact />
               <div className="flex items-center gap-2.5">
                 <span className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-bold text-muted">
-                  Day {currentDay.day_number}/21
+                  Day {currentDay.day_number}/{PROGRAM_LENGTH}
                 </span>
                 <Link href="/profile" aria-label="Profile">
                   <Avatar name={currentUser.name} size="sm" />
