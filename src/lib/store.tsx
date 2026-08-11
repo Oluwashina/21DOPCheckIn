@@ -10,58 +10,163 @@ import {
   type ReactNode,
 } from "react";
 
-import { getAdapter, type NewUserInput } from "./data";
+import { getAdapter, type ProfileInput } from "./data";
+import { getSupabase, isSupabaseConfigured } from "./supabase/client";
 import type { CheckInInput, Database, Team, User } from "./types";
 
-const SESSION_KEY = "21dop:session:v1";
+/**
+ * Where the person stands with the app:
+ *  unconfigured  — the Supabase env vars are missing (developer error)
+ *  loading       — checking for an existing session
+ *  signed_out    — no session; show login / sign-up
+ *  needs_profile — signed in, but no profile row yet (rare: sign-up interrupted)
+ *  deactivated   — an admin has switched them off
+ *  ready         — signed in with a profile and data loaded
+ */
+export type AuthStatus =
+  | "unconfigured"
+  | "loading"
+  | "signed_out"
+  | "needs_profile"
+  | "deactivated"
+  | "ready";
 
 interface StoreValue {
-  db: Database | null;
+  status: AuthStatus;
   loading: boolean;
+  db: Database | null;
+  /** Team names, available before sign-in so sign-up can list them. */
+  teams: Team[];
   currentUser: User | null;
   /** Re-renders on a timer so "live" sessions flip status without a refresh. */
   now: Date;
-  signIn: (identifier: string) => User | null;
-  signOut: () => void;
-  register: (input: NewUserInput) => Promise<User>;
+  /** Last failed write, surfaced as a banner. */
+  error: string | null;
+  clearError: () => void;
+
+  signIn: (email: string, password: string) => Promise<void>;
+  /** Returns true when Supabase wants the address confirmed before sign-in. */
+  signUp: (email: string, password: string, profile: ProfileInput) => Promise<boolean>;
+  sendPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  completeProfile: (input: ProfileInput) => Promise<void>;
+  signOut: () => Promise<void>;
+
   saveCheckIn: (sessionId: string, input: CheckInInput) => Promise<void>;
-  createUser: (input: NewUserInput) => Promise<User>;
   updateUser: (userId: string, patch: Partial<Omit<User, "id">>) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
-  createTeam: (name: string) => Promise<Team>;
+  createTeam: (name: string) => Promise<Team | null>;
   updateTeam: (teamId: string, patch: Partial<Omit<Team, "id">>) => Promise<void>;
   deleteTeam: (teamId: string) => Promise<void>;
-  resetDemoData: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
 
-function normalise(value: string): string {
-  return value.trim().toLowerCase().replace(/[\s()-]/g, "");
+function messageFrom(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return "Something went wrong. Please try again.";
+}
+
+/** Supabase's auth errors are terse; say what to do next instead. */
+function signInMessage(raw: string): string {
+  if (/invalid login credentials/i.test(raw)) {
+    return "That email and password don't match. Try again, or reset your password below.";
+  }
+  if (/email not confirmed/i.test(raw)) {
+    return "Confirm your email address first — check your inbox for the link.";
+  }
+  return raw;
+}
+
+function signUpMessage(raw: string): string {
+  if (/already registered|already exists/i.test(raw)) {
+    return "That email is already registered. Sign in instead.";
+  }
+  if (/password/i.test(raw) && /short|least|weak/i.test(raw)) {
+    return "Please choose a password of at least 8 characters.";
+  }
+  return raw;
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const adapter = useMemo(() => getAdapter(), []);
+  const configured = isSupabaseConfigured();
+
+  const [status, setStatus] = useState<AuthStatus>(
+    configured ? "loading" : "unconfigured",
+  );
   const [db, setDb] = useState<Database | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [error, setError] = useState<string | null>(null);
+
+  const loadForSession = useCallback(
+    async (sessionUserId: string) => {
+      const loaded = await adapter.loadDatabase();
+      const profile = loaded.users.find((user) => user.id === sessionUserId);
+
+      if (!profile) {
+        // The sign-up trigger did not run, or an admin removed them. Let them
+        // rebuild the profile rather than stranding them on a blank screen.
+        setTeams(await adapter.loadTeams());
+        setUserId(sessionUserId);
+        setStatus("needs_profile");
+        return;
+      }
+
+      setDb(loaded);
+      setTeams(loaded.teams);
+      setUserId(sessionUserId);
+      setStatus(profile.active ? "ready" : "deactivated");
+    },
+    [adapter],
+  );
 
   useEffect(() => {
+    if (!configured) return;
+
     let cancelled = false;
-    adapter.loadDatabase().then((loaded) => {
+    const supabase = getSupabase();
+
+    async function sync(sessionUserId: string | null) {
       if (cancelled) return;
-      setDb(loaded);
-      const storedId = window.localStorage.getItem(SESSION_KEY);
-      if (storedId && loaded.users.some((user) => user.id === storedId)) {
-        setCurrentUserId(storedId);
+
+      if (!sessionUserId) {
+        setDb(null);
+        setUserId(null);
+        setStatus("signed_out");
+        // Team names are public, so the sign-up screen can still list them.
+        adapter
+          .loadTeams()
+          .then((list) => !cancelled && setTeams(list))
+          .catch(() => undefined);
+        return;
       }
-      setLoading(false);
+
+      try {
+        await loadForSession(sessionUserId);
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(messageFrom(loadError));
+          setStatus("signed_out");
+        }
+      }
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      void sync(data.session?.user.id ?? null);
     });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      void sync(session?.user.id ?? null);
+    });
+
     return () => {
       cancelled = true;
+      subscription.subscription.unsubscribe();
     };
-  }, [adapter]);
+  }, [adapter, configured, loadForSession]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60_000);
@@ -69,120 +174,214 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const currentUser = useMemo(
-    () => db?.users.find((user) => user.id === currentUserId) ?? null,
-    [db, currentUserId],
+    () => db?.users.find((user) => user.id === userId) ?? null,
+    [db, userId],
   );
 
-  const persistSession = useCallback((userId: string | null) => {
-    setCurrentUserId(userId);
-    if (userId) window.localStorage.setItem(SESSION_KEY, userId);
-    else window.localStorage.removeItem(SESSION_KEY);
+  /** Runs a write, surfacing any failure as a banner instead of failing silently. */
+  const guard = useCallback(async <T,>(work: () => Promise<T>): Promise<T | null> => {
+    try {
+      setError(null);
+      return await work();
+    } catch (caught) {
+      setError(messageFrom(caught));
+      return null;
+    }
   }, []);
 
-  const signIn = useCallback(
-    (identifier: string) => {
-      if (!db) return null;
-      const needle = normalise(identifier);
-      if (!needle) return null;
-      const match = db.users.find(
-        (user) => normalise(user.email) === needle || normalise(user.phone) === needle,
-      );
-      if (!match) return null;
-      persistSession(match.id);
-      return match;
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error: authError } = await getSupabase().auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (authError) throw new Error(signInMessage(authError.message));
+    // onAuthStateChange picks it up from here and loads the data.
+  }, []);
+
+  const signUp = useCallback(
+    async (email: string, password: string, profile: ProfileInput) => {
+      const { data, error: authError } = await getSupabase().auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          // The sign-up trigger reads these to build the profile row.
+          data: {
+            name: profile.name.trim(),
+            phone: profile.phone?.trim() ?? "",
+            team_id: profile.team_id ?? "",
+          },
+        },
+      });
+
+      if (authError) throw new Error(signUpMessage(authError.message));
+
+      // No session means the project asks people to confirm their address.
+      return !data.session;
     },
-    [db, persistSession],
+    [],
   );
 
-  const signOut = useCallback(() => persistSession(null), [persistSession]);
+  const sendPasswordReset = useCallback(async (email: string) => {
+    const { error: authError } = await getSupabase().auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: `${window.location.origin}/reset` },
+    );
+    if (authError) throw new Error(authError.message);
+  }, []);
 
-  const register = useCallback(
-    async (input: NewUserInput) => {
-      const { db: next, user } = await adapter.createUser(input);
-      setDb(next);
-      persistSession(user.id);
-      return user;
+  const updatePassword = useCallback(async (password: string) => {
+    const { error: authError } = await getSupabase().auth.updateUser({ password });
+    if (authError) throw new Error(authError.message);
+  }, []);
+
+  const completeProfile = useCallback(
+    async (input: ProfileInput) => {
+      const { data } = await getSupabase().auth.getUser();
+      const authUser = data.user;
+      if (!authUser) throw new Error("Your session expired. Sign in again.");
+
+      await adapter.createProfile(authUser.id, authUser.email ?? "", input);
+      await loadForSession(authUser.id);
     },
-    [adapter, persistSession],
+    [adapter, loadForSession],
   );
+
+  const signOut = useCallback(async () => {
+    await getSupabase().auth.signOut();
+    setDb(null);
+    setUserId(null);
+    setStatus("signed_out");
+  }, []);
 
   const saveCheckIn = useCallback(
     async (sessionId: string, input: CheckInInput) => {
-      if (!currentUserId) return;
-      setDb(await adapter.saveCheckIn(currentUserId, sessionId, input));
+      if (!userId) return;
+      await guard(async () => {
+        const saved = await adapter.saveCheckIn(userId, sessionId, input);
+        setDb((current) => {
+          if (!current) return current;
+          const others = current.check_ins.filter(
+            (row) => !(row.user_id === saved.user_id && row.session_id === saved.session_id),
+          );
+          return { ...current, check_ins: [...others, saved] };
+        });
+      });
     },
-    [adapter, currentUserId],
-  );
-
-  const createUser = useCallback(
-    async (input: NewUserInput) => {
-      const { db: next, user } = await adapter.createUser(input);
-      setDb(next);
-      return user;
-    },
-    [adapter],
+    [adapter, guard, userId],
   );
 
   const updateUser = useCallback(
-    async (userId: string, patch: Partial<Omit<User, "id">>) => {
-      setDb(await adapter.updateUser(userId, patch));
+    async (targetId: string, patch: Partial<Omit<User, "id">>) => {
+      await guard(async () => {
+        const saved = await adapter.updateUser(targetId, patch);
+        setDb((current) =>
+          current
+            ? {
+                ...current,
+                users: current.users.map((user) => (user.id === saved.id ? saved : user)),
+              }
+            : current,
+        );
+      });
     },
-    [adapter],
+    [adapter, guard],
   );
 
   const deleteUser = useCallback(
-    async (userId: string) => {
-      setDb(await adapter.deleteUser(userId));
-      if (userId === currentUserId) persistSession(null);
+    async (targetId: string) => {
+      await guard(async () => {
+        await adapter.deleteUser(targetId);
+        setDb((current) =>
+          current
+            ? {
+                ...current,
+                users: current.users.filter((user) => user.id !== targetId),
+                check_ins: current.check_ins.filter((row) => row.user_id !== targetId),
+                teams: current.teams.map((team) =>
+                  team.team_lead_id === targetId ? { ...team, team_lead_id: null } : team,
+                ),
+              }
+            : current,
+        );
+      });
+      if (targetId === userId) await signOut();
     },
-    [adapter, currentUserId, persistSession],
+    [adapter, guard, signOut, userId],
   );
 
   const createTeam = useCallback(
     async (name: string) => {
-      const { db: next, team } = await adapter.createTeam(name);
-      setDb(next);
-      return team;
+      return guard(async () => {
+        const team = await adapter.createTeam(name);
+        setDb((current) =>
+          current ? { ...current, teams: [...current.teams, team] } : current,
+        );
+        return team;
+      });
     },
-    [adapter],
+    [adapter, guard],
   );
 
   const updateTeam = useCallback(
     async (teamId: string, patch: Partial<Omit<Team, "id">>) => {
-      setDb(await adapter.updateTeam(teamId, patch));
+      await guard(async () => {
+        const { team, users } = await adapter.updateTeam(teamId, patch);
+        setDb((current) => {
+          if (!current) return current;
+          const changed = new Map(users.map((user) => [user.id, user]));
+          return {
+            ...current,
+            teams: current.teams.map((row) => (row.id === team.id ? team : row)),
+            users: current.users.map((user) => changed.get(user.id) ?? user),
+          };
+        });
+      });
     },
-    [adapter],
+    [adapter, guard],
   );
 
   const deleteTeam = useCallback(
     async (teamId: string) => {
-      setDb(await adapter.deleteTeam(teamId));
+      await guard(async () => {
+        await adapter.deleteTeam(teamId);
+        setDb((current) =>
+          current
+            ? {
+                ...current,
+                teams: current.teams.filter((team) => team.id !== teamId),
+                users: current.users.map((user) =>
+                  user.team_id === teamId ? { ...user, team_id: null } : user,
+                ),
+              }
+            : current,
+        );
+      });
     },
-    [adapter],
+    [adapter, guard],
   );
 
-  const resetDemoData = useCallback(async () => {
-    const next = await adapter.resetDatabase();
-    setDb(next);
-    persistSession(null);
-  }, [adapter, persistSession]);
-
   const value: StoreValue = {
+    status,
+    loading: status === "loading",
     db,
-    loading,
+    teams,
     currentUser,
     now,
+    error,
+    clearError: () => setError(null),
     signIn,
+    signUp,
+    sendPasswordReset,
+    updatePassword,
+    completeProfile,
     signOut,
-    register,
     saveCheckIn,
-    createUser,
     updateUser,
     deleteUser,
     createTeam,
     updateTeam,
     deleteTeam,
-    resetDemoData,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

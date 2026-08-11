@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { PlusIcon, TrashIcon } from "@/components/icons";
+import { TrashIcon } from "@/components/icons";
 import { Chips } from "@/components/SessionFilterChips";
 import {
   Avatar,
@@ -26,13 +26,10 @@ const ROLE_OPTIONS: { value: Role; label: string }[] = [
 ];
 
 export default function AdminMembersPage() {
-  const { db, createUser, updateUser, deleteUser } = useStore();
+  const { db, updateUser, deleteUser } = useStore();
   const [query, setQuery] = useState("");
   const [teamFilter, setTeamFilter] = useState("all");
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ name: "", contact: "", team_id: "", role: "member" as Role });
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const teams = useMemo(
     () => [...(db?.teams ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
@@ -56,24 +53,6 @@ export default function AdminMembersPage() {
 
   if (!db) return null;
 
-  async function handleAdd(event: React.FormEvent) {
-    event.preventDefault();
-    setError(null);
-    if (!form.name.trim() || !form.contact.trim()) {
-      setError("Name and a contact detail are required.");
-      return;
-    }
-    await createUser({
-      name: form.name,
-      email: form.contact.includes("@") ? form.contact : "",
-      phone: form.contact.includes("@") ? "" : form.contact,
-      team_id: form.team_id || null,
-      role: form.role,
-    });
-    setForm({ name: "", contact: "", team_id: "", role: "member" });
-    setAdding(false);
-  }
-
   return (
     <div className="space-y-6 pb-4">
       <section>
@@ -83,75 +62,10 @@ export default function AdminMembersPage() {
         </p>
       </section>
 
-      {adding ? (
-        <Card>
-          <form className="space-y-3" onSubmit={handleAdd}>
-            <Field label="Full name">
-              <Input
-                autoFocus
-                value={form.name}
-                placeholder="Jane Doe"
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-              />
-            </Field>
-            <Field label="Email or phone number">
-              <Input
-                value={form.contact}
-                placeholder="jane@thenewchurch.org"
-                onChange={(event) => setForm({ ...form, contact: event.target.value })}
-              />
-            </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Service team">
-                <Select
-                  value={form.team_id}
-                  onChange={(event) => setForm({ ...form, team_id: event.target.value })}
-                >
-                  <option value="">No team</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Role">
-                <Select
-                  value={form.role}
-                  onChange={(event) =>
-                    setForm({ ...form, role: event.target.value as Role })
-                  }
-                >
-                  {ROLE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-            {error ? <p className="text-sm text-rose">{error}</p> : null}
-            <div className="flex gap-2.5">
-              <Button type="submit" fullWidth>
-                Add member
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={() => setAdding(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Card>
-      ) : (
-        <Button fullWidth size="lg" onClick={() => setAdding(true)}>
-          <PlusIcon width={18} height={18} />
-          Add member
-        </Button>
-      )}
+      <p className="rounded-2xl border border-line bg-surface px-4 py-3 text-sm text-muted">
+        People add themselves at the sign-up screen. Once they&apos;re in, set their team
+        and promote leads from here.
+      </p>
 
       <section>
         <div className="mb-3 space-y-2.5">
@@ -252,7 +166,7 @@ export default function AdminMembersPage() {
                         <label className="flex items-center gap-2.5 text-sm font-semibold">
                           <input
                             type="checkbox"
-                            className="h-5 w-5 accent-[color:var(--color-gold)]"
+                            className="h-5 w-5 accent-gold"
                             checked={user.active}
                             onChange={(event) =>
                               void updateUser(user.id, { active: event.target.checked })
@@ -267,7 +181,7 @@ export default function AdminMembersPage() {
                           onClick={() => {
                             if (
                               window.confirm(
-                                `Remove ${user.name}? Their check-in history will be deleted.`,
+                                `Remove ${user.name}? Their check-in history is deleted, and they could sign up again. To stop someone signing in, switch them to inactive instead.`,
                               )
                             ) {
                               void deleteUser(user.id);

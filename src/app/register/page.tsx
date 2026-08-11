@@ -2,52 +2,63 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Button, Field, Input, Select } from "@/components/ui";
+import { SetupNotice } from "@/components/SetupNotice";
+import { Button, Field, Input, PasswordInput, Select } from "@/components/ui";
 import { CHURCH_NAME } from "@/lib/program";
 import { useStore } from "@/lib/store";
 
+const MIN_PASSWORD = 8;
+
 export default function RegisterPage() {
-  const { db, register } = useStore();
+  const { status, teams, signUp } = useStore();
   const router = useRouter();
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [teamId, setTeamId] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [confirmSent, setConfirmSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  const teams = [...(db?.teams ?? [])].sort((a, b) => a.name.localeCompare(b.name));
-  const looksLikeEmail = contact.includes("@");
+  useEffect(() => {
+    if (status === "ready") router.replace("/");
+  }, [status, router]);
 
-  async function handleSubmit(event: React.FormEvent) {
+  const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
 
-    if (!name.trim() || !contact.trim() || !teamId) {
+    if (!name.trim() || !email.includes("@") || !teamId) {
       setError("Please fill in every field so your team lead can find you.");
       return;
     }
-
-    const taken = db?.users.some(
-      (user) =>
-        user.email.toLowerCase() === contact.trim().toLowerCase() ||
-        user.phone.replace(/\s/g, "") === contact.replace(/\s/g, ""),
-    );
-    if (taken) {
-      setError("That contact is already registered. Try signing in instead.");
+    if (password.length < MIN_PASSWORD) {
+      setError(`Please choose a password of at least ${MIN_PASSWORD} characters.`);
       return;
     }
 
-    setSubmitting(true);
-    await register({
-      name,
-      email: looksLikeEmail ? contact : "",
-      phone: looksLikeEmail ? "" : contact,
-      team_id: teamId,
-    });
-    router.replace("/");
+    setBusy(true);
+    try {
+      const needsConfirmation = await signUp(email, password, {
+        name,
+        phone,
+        team_id: teamId,
+      });
+      if (needsConfirmation) setConfirmSent(true);
+      else router.replace("/");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
+
+  if (status === "unconfigured") return <SetupNotice />;
 
   return (
     <div className="app-aurora relative flex min-h-dvh flex-col justify-center px-5 py-10">
@@ -60,53 +71,96 @@ export default function RegisterPage() {
             Join <span className="text-gradient-gold">21 Days of Power</span>
           </h1>
           <p className="mt-2 text-[15px] text-muted">
-            Three details and you&apos;re in. Takes about 20 seconds.
+            A few details and you&apos;re in. Takes about 30 seconds.
           </p>
         </div>
 
-        <form className="card space-y-4 p-5" onSubmit={handleSubmit}>
-          <Field label="Full name">
-            <Input
-              value={name}
-              autoComplete="name"
-              placeholder="John Doe"
-              onChange={(event) => setName(event.target.value)}
-            />
-          </Field>
-
-          <Field label="Email or phone number">
-            <Input
-              value={contact}
-              autoComplete="username"
-              placeholder="you@thenewchurch.org"
-              onChange={(event) => setContact(event.target.value)}
-            />
-          </Field>
-
-          <Field label="Service team">
-            <Select value={teamId} onChange={(event) => setTeamId(event.target.value)}>
-              <option value="">Select your team</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.id}>
-                  {team.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          {error ? <p className="text-sm text-rose">{error}</p> : null}
-
-          <Button type="submit" size="lg" fullWidth disabled={submitting}>
-            {submitting ? "Creating your profile…" : "Create my profile"}
-          </Button>
-
-          <p className="text-center text-sm text-muted">
-            Already registered?{" "}
-            <Link href="/login" className="font-semibold text-gold-soft">
-              Sign in
+        {confirmSent ? (
+          <div className="card space-y-3 p-5 text-center">
+            <h2 className="text-lg font-extrabold">Confirm your email</h2>
+            <p className="text-sm text-muted">
+              We sent a confirmation link to{" "}
+              <strong className="text-text">{email}</strong>. Tap it, then come back and
+              sign in.
+            </p>
+            <Link href="/login" className="block text-sm font-semibold text-gold-soft">
+              Go to sign in
             </Link>
-          </p>
-        </form>
+          </div>
+        ) : (
+          <form className="card space-y-4 p-5" onSubmit={submit}>
+            <Field label="Full name">
+              <Input
+                value={name}
+                autoComplete="name"
+                placeholder="John Doe"
+                onChange={(event) => setName(event.target.value)}
+              />
+            </Field>
+
+            <Field label="Email address" hint="This is how you'll sign in.">
+              <Input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                placeholder="you@example.com"
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </Field>
+
+            <Field label="Password" hint={`At least ${MIN_PASSWORD} characters.`}>
+              <PasswordInput
+                autoComplete="new-password"
+                value={password}
+                placeholder="••••••••"
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </Field>
+
+            <Field label="Phone number (Optional)">
+              <Input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={phone}
+                placeholder="+234 800 000 0000"
+                onChange={(event) => setPhone(event.target.value)}
+              />
+            </Field>
+
+            <Field
+              label="Service team"
+              hint={
+                sortedTeams.length === 0
+                  ? "No teams yet — an admin needs to add them first."
+                  : undefined
+              }
+            >
+              <Select value={teamId} onChange={(event) => setTeamId(event.target.value)}>
+                <option value="">Select your team</option>
+                {sortedTeams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            {error ? <p className="text-sm text-rose">{error}</p> : null}
+
+            <Button type="submit" size="lg" fullWidth disabled={busy}>
+              {busy ? "Creating your profile…" : "Create my profile"}
+            </Button>
+
+            <p className="text-center text-sm text-muted">
+              Already registered?{" "}
+              <Link href="/login" className="font-semibold text-gold-soft">
+                Sign in
+              </Link>
+            </p>
+          </form>
+        )}
       </div>
     </div>
   );

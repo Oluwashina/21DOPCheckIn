@@ -11,7 +11,7 @@ import {
   LogoutIcon,
   ShieldIcon,
 } from "@/components/icons";
-import { Avatar, Badge, Button, Card, Field, Input, SectionTitle, Select } from "@/components/ui";
+import { Avatar, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
 import { getMemberProgress, getTeamById } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
@@ -22,24 +22,21 @@ const ROLE_LABEL = {
 } as const;
 
 export default function ProfilePage() {
-  const { db, currentUser, now, signOut, updateUser, resetDemoData } = useStore();
+  const { db, currentUser, now, signOut, updateUser } = useStore();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
-  const [teamId, setTeamId] = useState("");
+  const [phone, setPhone] = useState("");
 
   if (!db || !currentUser) return null;
 
   const team = getTeamById(db, currentUser.team_id);
   const progress = getMemberProgress(db, currentUser.id, now);
-  const teams = [...db.teams].sort((a, b) => a.name.localeCompare(b.name));
 
   function startEditing() {
     if (!currentUser) return;
     setName(currentUser.name);
-    setContact(currentUser.email || currentUser.phone);
-    setTeamId(currentUser.team_id ?? "");
+    setPhone(currentUser.phone);
     setEditing(true);
   }
 
@@ -48,16 +45,14 @@ export default function ProfilePage() {
     if (!currentUser) return;
     await updateUser(currentUser.id, {
       name: name.trim() || currentUser.name,
-      ...(contact.includes("@")
-        ? { email: contact.trim() }
-        : { phone: contact.trim() }),
-      team_id: teamId || null,
+      phone: phone.trim(),
     });
     setEditing(false);
   }
 
   const links = [
     { href: "/progress", label: "My progress", icon: FlameIcon, show: true },
+    { href: "/reset", label: "Change password", icon: ShieldIcon, show: true },
     {
       href: "/team",
       label: "Team dashboard",
@@ -135,22 +130,19 @@ export default function ProfilePage() {
               <Field label="Full name">
                 <Input value={name} onChange={(event) => setName(event.target.value)} />
               </Field>
-              <Field label="Email or phone number">
+              <Field label="Phone number">
                 <Input
-                  value={contact}
-                  onChange={(event) => setContact(event.target.value)}
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  placeholder="+234 800 000 0000"
+                  onChange={(event) => setPhone(event.target.value)}
                 />
               </Field>
-              <Field label="Service team">
-                <Select value={teamId} onChange={(event) => setTeamId(event.target.value)}>
-                  <option value="">No team</option>
-                  {teams.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+              <p className="text-xs text-faint">
+                Your email and service team are set by an admin. Ask your team lead if
+                you need to move teams.
+              </p>
               <div className="flex gap-2.5">
                 <Button type="submit" fullWidth>
                   Save changes
@@ -204,30 +196,19 @@ export default function ProfilePage() {
         </section>
       ) : null}
 
-      <section className="space-y-2.5">
+      <section>
         <Button
           variant="secondary"
           size="lg"
           fullWidth
-          onClick={() => {
-            signOut();
+          onClick={async () => {
+            await signOut();
             router.replace("/login");
           }}
         >
           <LogoutIcon width={18} height={18} />
           Sign out
         </Button>
-
-        <button
-          type="button"
-          className="w-full py-2 text-center text-xs text-faint transition-colors hover:text-muted"
-          onClick={async () => {
-            await resetDemoData();
-            router.replace("/login");
-          }}
-        >
-          Reset demo data
-        </button>
       </section>
     </div>
   );

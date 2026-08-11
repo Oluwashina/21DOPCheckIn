@@ -25,37 +25,101 @@ Each session tracks three accountability items, stored separately: **checked in*
 **shared the link**, and **liked the YouTube page**. A member can check in without having
 shared or liked, and can tick those off later.
 
-## Getting started
+## Connecting Supabase
+
+The app has no data of its own — Supabase holds everything. Setting up a fresh project
+takes about ten minutes.
+
+**1. Create the project.** At [supabase.com/dashboard](https://supabase.com/dashboard),
+create a project. Pick the region closest to your congregation.
+
+**2. Create the tables.** Open the SQL Editor, paste the whole of
+[`supabase/schema.sql`](supabase/schema.sql), and run it. That creates the three tables,
+the fourteen service teams, the sign-up trigger and every security policy. It also marks
+`thedevoluwashina@gmail.com` as the admin — change that line first if you want a
+different address.
+
+**3. Copy your keys.** Project Settings → API. Copy `.env.example` to `.env.local` and
+fill in the project URL and the **anon** key. The anon key is meant to be public; the
+`service_role` key must never appear in this app.
+
+**4. Set up email and password sign-in.** Authentication → Sign In / Providers → Email:
+
+- **Enable email provider**: on
+- **Confirm email**: **off** — people can then sign up and start checking in immediately,
+  with no email to wait for. Turn it on if you'd rather verify addresses, at the cost of
+  every new person needing a working inbox before their first check-in.
+- **Minimum password length**: 8, to match the sign-up form.
+
+**5. Set the URLs used by password resets.** Authentication → URL Configuration. Set
+**Site URL** to `http://localhost:3000` while developing, and add your real domain plus
+`/reset` to **Redirect URLs** before launch. Reset links go nowhere without this.
+
+**6. Run it.**
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The app seeds itself with demo data on first load, anchored to
-the real programme dates, so the day number always matches the actual calendar.
+Open http://localhost:3000, sign up with your admin email, and you'll land on the admin
+dashboard.
+
+Email is only sent for password resets, so Supabase's built-in mail (a few messages an
+hour) is enough to start. If people begin reporting missing reset emails, add your own
+sender under Authentication → Emails → SMTP Settings — Resend, Postmark, or your church's
+Google Workspace.
+
+### How people get in
+
+Everyone signs themselves up: name, email, password, phone (optional) and service team.
+Nothing for you to create by hand.
+
+**Team leads are promoted, not invited.** Ask the person to sign up like everyone else,
+then either open **Teams**, pick their team, and choose them as lead, or open **Members**,
+find them, and switch their role. Promoting someone to lead also moves them onto that
+team and steps the previous lead back down to member.
+
+That means there's no lead-only sign-up link to leak, and knowing a lead's email address
+gets you nothing without their password.
+
+You keep three controls over everyone: their **service team**, their **role**, and an
+**Active** switch that stops a person signing in without deleting their history.
+
+### Where the service teams come from
+
+The sign-up dropdown reads the `teams` table live, and `schema.sql` seeds all fourteen
+teams when you run it. To check they landed:
+
+```sql
+select name from teams order by name;
+```
+
+If that returns nothing, the schema hasn't been run against this project yet. If it
+returns rows but the dropdown is still empty, the public read policy is missing — teams
+are the one table `anon` can read, because the sign-up screen needs it before anyone has
+an account:
+
+```sql
+select policyname, roles from pg_policies where tablename = 'teams';
+```
+
+To add or rename a team later, use **Admin → Teams** in the app rather than SQL, so the
+new team is picked up everywhere at once.
+
+### The programme schedule
 
 The whole schedule lives in one place, `src/lib/program.ts`: the start and end dates,
-session names and times, theme, minister, and the YouTube channel. The number of days is
-derived from that window rather than hardcoded, so moving the end date is a one-line
-change. Set `RUNS_ON_WEEKENDS = true` to include Saturdays and Sundays, or
-`YOUTUBE_CHANNEL_URL` to turn on the "watch and like" links.
+session names and times, theme, minister, and the YouTube channel. It is *not* in the
+database — check-ins point at a session by a stable id like `2026-08-10_whirlwind`, so
+moving a date is a code change rather than a migration.
+
+The number of days is derived from the window rather than hardcoded. Set
+`RUNS_ON_WEEKENDS = true` to include Saturdays and Sundays, or `YOUTUBE_CHANNEL_URL` to
+turn on the "watch and like" links.
 
 Day numbers are read from the generated schedule, never calculated as "days since the
 start" — with weekends skipped, those two disagree (Monday 17 August is Day 6, not Day 8).
-
-### Demo accounts
-
-Sign in with any of these (the login screen also has one-tap buttons):
-
-| Role | Email |
-| --- | --- |
-| Member | `john-doe@thenewchurch.org` |
-| Team Lead | `lead.thenewmusic@thenewchurch.org` |
-| Admin | `admin@thenewchurch.org` |
-
-Sign-in is identifier-only for the MVP — enter an email or phone number and you stay
-signed in on that device. **Profile → Reset demo data** wipes and re-seeds everything.
 
 ## Scripts
 
@@ -64,11 +128,13 @@ signed in on that device. **Profile → Reset demo data** wipes and re-seeds eve
 | `npm run dev` | Dev server |
 | `npm run build` | Production build |
 | `npm run typecheck` | TypeScript, no emit |
-| `npm run verify` | Headless end-to-end check of the whole data flow |
+| `npm run verify` | Headless check of the schedule and every roll-up |
 
-`npm run verify` walks the full journey — admin creates a team, adds a member, promotes a
-lead, the member checks in and later marks shared/liked, then asserts that team stats,
-personal progress, attendance rates and CSV exports all update correctly.
+`npm run verify` builds the schedule and a small fixture in memory, then asserts the parts
+that decide who counts as present: session ids match the database constraint, no day lands
+on a weekend, a check-in stands alone without a share or a like, streaks break on a missed
+day, deactivated people drop out of the totals, and CSV export escapes correctly. It needs
+no database, so it runs in CI.
 
 ## Brand
 
@@ -108,32 +174,37 @@ src/
   components/         UI primitives and app-specific components
   lib/
     types.ts          Data model: users, teams, days, sessions, check_ins
-    program.ts        Programme constants, dates, session-status-from-clock logic
-    seed.ts           Deterministic demo data (14 teams, every day and session)
+    program.ts        Programme constants, dates, schedule, session status
     stats.ts          All selectors and roll-ups used by dashboards
     store.tsx         React context: auth, current data, mutations
-    data/             The swap point for the backend
+    supabase/         The browser client
+    data/             DataAdapter interface + the Supabase implementation
+supabase/schema.sql   Tables, policies, triggers — run once, by hand
 ```
 
 Session status (**upcoming / live / completed**) is always derived from the clock, never
 stored. A session is "live" from its start time until 90 minutes after.
 
-## Swapping the mock data for Supabase
+Every read and write goes through the `DataAdapter` interface in
+`src/lib/data/adapter.ts`, so no screen talks to Supabase directly. Mutations return only
+the rows they touched and the store patches its copy, rather than refetching everything
+after each tap.
 
-Everything reads and writes through the `DataAdapter` interface in
-`src/lib/data/adapter.ts`. The MVP ships `mock-adapter.ts`, which persists to
-`localStorage`.
+## Who can see what
 
-To move to Supabase:
+Security is enforced by Postgres, not by the app — hiding a button is not a permission.
+Row-level security means:
 
-1. Run `supabase/schema.sql` against your project. It mirrors the same tables and adds
-   row-level security so members only see their own check-ins, leads see their team, and
-   admins see everything.
-2. Add `supabase-adapter.ts` implementing `DataAdapter`.
-3. Return it from `getAdapter()` in `src/lib/data/index.ts`, e.g. when
-   `NEXT_PUBLIC_SUPABASE_URL` is set.
+- You can read **yourself and your own team**. Admins read everyone.
+- You can write **only your own check-ins**.
+- You can change **your own name and phone**, nothing else. Role, team and active status
+  are admin-only, enforced by a trigger, so a member cannot make themselves an admin by
+  calling the API directly.
+- **Team names** are the one public table, so the sign-up screen can list them.
 
-No screen or component needs to change.
+The table of admin emails has row-level security on and no policy at all: nothing can read
+or write it through the API. To add another admin, either promote them from the dashboard
+or insert a row in the SQL editor before they sign up.
 
 ## Not built (deliberately)
 

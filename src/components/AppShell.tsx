@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
+import { CompleteProfile } from "./CompleteProfile";
 import { Wordmark } from "./Logo";
 import { isNavItemActive, navForRole } from "./nav";
-import { Avatar } from "./ui";
+import { Avatar, Button } from "./ui";
 import { PROGRAM_LENGTH, PROGRAM_NAME } from "@/lib/program";
 import { getCurrentDay } from "@/lib/stats";
 import { useStore } from "@/lib/store";
@@ -18,15 +19,34 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { currentUser, loading, db } = useStore();
+  const { currentUser, status, db, error, clearError, signOut } = useStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !currentUser) router.replace("/login");
-  }, [loading, currentUser, router]);
+    if (status === "signed_out" || status === "unconfigured") router.replace("/login");
+  }, [status, router]);
 
-  if (loading || !currentUser || !db) {
+  if (status === "needs_profile") return <CompleteProfile />;
+
+  if (status === "deactivated") {
+    return (
+      <div className="flex min-h-dvh items-center justify-center px-5">
+        <div className="card max-w-md space-y-4 p-6 text-center">
+          <h1 className="text-xl font-extrabold">Your account is paused</h1>
+          <p className="text-sm text-muted">
+            An admin has switched your account off for now. Speak to your team lead if
+            you think this is a mistake.
+          </p>
+          <Button variant="secondary" fullWidth onClick={() => void signOut()}>
+            Sign out
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (status !== "ready" || !currentUser || !db) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -95,6 +115,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
           </header>
+
+          {error ? (
+            <div className="mx-4 mt-4 flex items-start gap-3 rounded-2xl border border-rose/40 bg-rose/10 p-3.5 lg:mx-0">
+              <p className="flex-1 text-sm text-text">{error}</p>
+              <button
+                type="button"
+                onClick={clearError}
+                className="shrink-0 text-xs font-bold uppercase tracking-wide text-rose"
+              >
+                Dismiss
+              </button>
+            </div>
+          ) : null}
 
           <main className="px-4 pt-5 lg:px-0 lg:pt-8">{children}</main>
         </div>

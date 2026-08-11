@@ -1,13 +1,9 @@
 import type { DataAdapter } from "./adapter";
-import { mockAdapter } from "./mock-adapter";
+import { supabaseAdapter } from "./supabase-adapter";
 
-/**
- * Single swap point for the backend. When Supabase is wired up, add a
- * `supabase-adapter.ts` implementing `DataAdapter` and return it here (e.g.
- * based on `process.env.NEXT_PUBLIC_SUPABASE_URL` being present).
- */
+/** Single swap point for the backend. */
 export function getAdapter(): DataAdapter {
-  return mockAdapter;
+  return supabaseAdapter;
 }
 
-export type { DataAdapter, NewUserInput } from "./adapter";
+export type { DataAdapter, ProfileInput } from "./adapter";

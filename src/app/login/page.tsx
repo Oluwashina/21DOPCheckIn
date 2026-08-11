@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoMark } from "@/components/Logo";
-import { homeForRole } from "@/components/nav";
-import { Button, Field, Input } from "@/components/ui";
+import { SetupNotice } from "@/components/SetupNotice";
+import { Button, Field, Input, PasswordInput } from "@/components/ui";
 import {
   CHURCH_NAME,
   MINISTER_NAME,
@@ -16,33 +16,34 @@ import {
   PROGRAM_THEME,
   YOUTUBE_CHANNEL_NAME,
 } from "@/lib/program";
-import { DEMO_ADMIN_EMAIL, DEMO_LEAD_EMAIL, DEMO_MEMBER_EMAIL } from "@/lib/seed";
 import { useStore } from "@/lib/store";
 
-const DEMO_ACCOUNTS = [
-  { label: "Member", email: DEMO_MEMBER_EMAIL, hint: "John Doe · The New Music" },
-  { label: "Team Lead", email: DEMO_LEAD_EMAIL, hint: "The New Music" },
-  { label: "Admin", email: DEMO_ADMIN_EMAIL, hint: "Programme oversight" },
-];
-
 export default function LoginPage() {
-  const { signIn, currentUser, loading } = useStore();
+  const { status, signIn } = useStore();
   const router = useRouter();
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && currentUser) router.replace(homeForRole(currentUser.role));
-  }, [loading, currentUser, router]);
+    if (status === "ready") router.replace("/");
+  }, [status, router]);
 
-  function attemptSignIn(value: string) {
-    const user = signIn(value);
-    if (!user) {
-      setError("We couldn't find that email or phone number. Try again or join below.");
-      return;
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      await signIn(email, password);
+      router.replace("/");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Please try again.");
+      setBusy(false);
     }
-    router.replace(homeForRole(user.role));
   }
+
+  if (status === "unconfigured") return <SetupNotice />;
 
   return (
     <div className="app-aurora relative flex min-h-dvh flex-col justify-center px-5 py-10">
@@ -65,60 +66,52 @@ export default function LoginPage() {
           <p className="mt-1 text-sm text-muted">{PROGRAM_DATE_RANGE}</p>
         </div>
 
-        <form
-          className="card space-y-4 p-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setError(null);
-            attemptSignIn(identifier);
-          }}
-        >
-          <Field label="Email or phone number" hint="We'll keep you signed in on this device.">
+        <form className="card space-y-4 p-5" onSubmit={submit}>
+          <Field label="Email address">
             <Input
-              type="text"
+              type="email"
               inputMode="email"
-              autoComplete="username"
-              placeholder="you@thenewchurch.org"
-              value={identifier}
-              onChange={(event) => setIdentifier(event.target.value)}
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </Field>
+
+          <Field label="Password">
+            <PasswordInput
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
           </Field>
 
           {error ? <p className="text-sm text-rose">{error}</p> : null}
 
-          <Button type="submit" size="lg" fullWidth disabled={!identifier.trim()}>
-            Continue
+          <Button
+            type="submit"
+            size="lg"
+            fullWidth
+            disabled={busy || !email.includes("@") || password.length === 0}
+          >
+            {busy ? "Signing you in…" : "Sign in"}
           </Button>
 
-          <p className="text-center text-sm text-muted">
-            New here?{" "}
-            <Link href="/register" className="font-semibold text-gold-soft">
-              Join your service team
-            </Link>
-          </p>
-        </form>
-
-        <div className="mt-6">
-          <p className="mb-2 text-center text-[11px] font-bold uppercase tracking-[0.14em] text-faint">
-            Demo accounts
-          </p>
-          <div className="grid gap-2">
-            {DEMO_ACCOUNTS.map((account) => (
-              <button
-                key={account.email}
-                type="button"
-                onClick={() => attemptSignIn(account.email)}
-                className="flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-2"
-              >
-                <span>
-                  <span className="block text-sm font-semibold">{account.label}</span>
-                  <span className="block text-xs text-faint">{account.hint}</span>
-                </span>
-                <span className="text-xs font-semibold text-gold-soft">Sign in</span>
-              </button>
-            ))}
+          <div className="space-y-2 text-center text-sm">
+            <p>
+              <Link href="/forgot" className="text-muted">
+                Forgot your password?
+              </Link>
+            </p>
+            <p className="text-muted">
+              New here?{" "}
+              <Link href="/register" className="font-semibold text-gold-soft">
+                Join your service team
+              </Link>
+            </p>
           </div>
-        </div>
+        </form>
 
         <div className="mt-8 overflow-hidden rounded-[1.25rem] border border-line">
           <Image

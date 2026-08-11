@@ -113,6 +113,41 @@ export const PROGRAM_DATE_RANGE = (() => {
     : `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
 })();
 
+/**
+ * The whole schedule, generated from the dates above. Days and sessions are
+ * not stored in the database — only check-ins are, and they point back here by
+ * `sessionId`. Moving a programme date is therefore a code change, not a
+ * migration.
+ */
+export function buildSchedule(dates: string[] = PROGRAM_DATES): {
+  days: Day[];
+  sessions: Session[];
+} {
+  const days: Day[] = [];
+  const sessions: Session[] = [];
+
+  dates.forEach((date, index) => {
+    days.push({ id: date, day_number: index + 1, date });
+
+    for (const blueprint of SESSION_BLUEPRINT) {
+      sessions.push({
+        id: sessionId(date, blueprint.slot),
+        name: blueprint.name,
+        time: blueprint.time,
+        day_id: date,
+        slot: blueprint.slot,
+      });
+    }
+  });
+
+  return { days, sessions };
+}
+
+/** Stable, human-readable session key. Also stored in `check_ins.session_id`. */
+export function sessionId(date: string, slot: SessionSlot): string {
+  return `${date}_${slot}`;
+}
+
 export function shortTimeLabel(time: string): string {
   const [h, m] = time.split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
