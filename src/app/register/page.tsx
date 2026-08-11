@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { InstallTour } from "@/components/InstallTour";
 import { SetupNotice } from "@/components/SetupNotice";
 import { Button, Field, Input, PasswordInput, Select } from "@/components/ui";
 import { CHURCH_NAME } from "@/lib/program";
@@ -62,6 +63,7 @@ export default function RegisterPage() {
 
   return (
     <div className="app-aurora relative flex min-h-dvh flex-col justify-center px-5 py-10">
+      <InstallTour />
       <div className="relative z-10 mx-auto w-full max-w-md">
         <div className="mb-7 text-center">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-faint">

@@ -79,6 +79,8 @@ function signInMessage(raw: string): string {
 }
 
 function signUpMessage(raw: string): string {
+  const rateLimited = authEmailMessage(raw);
+  if (rateLimited) return rateLimited;
   if (/already registered|already exists/i.test(raw)) {
     return "That email is already registered. Sign in instead.";
   }
@@ -86,6 +88,13 @@ function signUpMessage(raw: string): string {
     return "Please choose a password of at least 8 characters.";
   }
   return raw;
+}
+
+function authEmailMessage(raw: string): string | null {
+  if (/rate limit|too many requests/i.test(raw)) {
+    return "Sign-up emails are paused for a moment because too many were sent. Try again in about an hour.";
+  }
+  return null;
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -229,7 +238,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       email.trim().toLowerCase(),
       { redirectTo: `${window.location.origin}/reset` },
     );
-    if (authError) throw new Error(authError.message);
+    if (authError) {
+      throw new Error(authEmailMessage(authError.message) ?? authError.message);
+    }
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {

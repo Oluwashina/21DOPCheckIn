@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { InstallTour } from "@/components/InstallTour";
 import { LogoMark } from "@/components/Logo";
 import { SetupNotice } from "@/components/SetupNotice";
 import { Button, Field, Input, PasswordInput } from "@/components/ui";
@@ -47,6 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="app-aurora relative flex min-h-dvh flex-col justify-center px-5 py-10">
+      <InstallTour />
       <div className="relative z-10 mx-auto w-full max-w-md">
         <div className="mb-7 text-center">
           <div className="mb-5 flex justify-center">
