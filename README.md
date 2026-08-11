@@ -51,11 +51,40 @@ fill in the project URL and the **anon** key. The anon key is meant to be public
   every new person needing a working inbox before their first check-in.
 - **Minimum password length**: 8, to match the sign-up form.
 
-**5. Set the URLs used by password resets.** Authentication → URL Configuration. Set
-**Site URL** to `http://localhost:3000` while developing, and add your real domain plus
-`/reset` to **Redirect URLs** before launch. Reset links go nowhere without this.
+**5. Allow the links to come back to the app.** Authentication → URL Configuration:
 
-**6. Run it.**
+- **Site URL**: `http://localhost:3000` while developing, your real domain in production.
+- **Redirect URLs**: add both landing pages, for each domain you use.
+
+```
+http://localhost:3000/confirm
+http://localhost:3000/reset
+https://your-domain.com/confirm
+https://your-domain.com/reset
+```
+
+An address that isn't on this list is ignored, and the link silently drops people on the
+Site URL instead — that is nearly always why a reset or confirmation link "does nothing".
+
+**6. Rewrite the emails.** Authentication → Emails → Templates. Supabase's defaults are
+plain and unbranded; ready-made replacements are in
+[`supabase/email-templates/`](supabase/email-templates). For each one, set the **Subject
+heading** and paste the file's contents into the message body:
+
+| Template | Subject | Body |
+| --- | --- | --- |
+| Confirm signup | `Confirm your email for 21 Days of Power` | `confirm-signup.html` |
+| Reset password | `Reset your 21 Days of Power password` | `reset-password.html` |
+
+The templates use `{{ .ConfirmationURL }}`, which already points at `/confirm` and
+`/reset` — the app asks for those when it sends the email, so you never hard-code a URL
+in the template. `{{ .Data.name }}` is the name the person typed at sign-up, so the
+confirmation email can greet them properly.
+
+Both links are single-use. Tapping the confirmation link signs them straight in rather
+than dropping them back at the sign-in screen.
+
+**7. Run it.**
 
 ```bash
 npm install

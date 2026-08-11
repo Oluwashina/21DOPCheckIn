@@ -1,0 +1,60 @@
+<!--
+  Supabase → Authentication → Emails → "Confirm signup"
+  Subject: Confirm your email for 21 Days of Power
+
+  {{ .ConfirmationURL }} carries the sign-up token and sends people to the
+  emailRedirectTo we set in the app (/confirm), so tapping it signs them in.
+  {{ .Data.name }} is the name they typed at sign-up.
+-->
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#000000;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#101013;border:1px solid #2c2c34;border-radius:20px;padding:32px;">
+        <tr>
+          <td style="text-align:center;">
+            <p style="margin:0;color:#7d7d89;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+              The New Church
+            </p>
+            <h1 style="margin:10px 0 0;color:#ffffff;font-size:28px;font-weight:800;line-height:1.2;">
+              21 Days of <span style="color:#ffc533;">Power</span>
+            </h1>
+            <p style="margin:8px 0 0;color:#ffd873;font-size:15px;font-weight:600;">
+              Thirsty Soul, Living Waters
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:28px;">
+            <p style="margin:0 0 14px;color:#ffffff;font-size:16px;">Hi {{ .Data.name }},</p>
+            <p style="margin:0 0 24px;color:#a1a1ac;font-size:15px;line-height:1.55;">
+              Confirm your email address and you're in. One tap and you'll be signed
+              straight into the app, ready to check in for today's sessions.
+            </p>
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="background:#ffc533;border-radius:14px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:block;padding:15px 34px;color:#000000;font-size:16px;font-weight:700;text-decoration:none;">
+                    Confirm my email
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:24px 0 0;color:#7d7d89;font-size:13px;line-height:1.55;">
+              This link works once and expires in 24 hours. If you didn't sign up for
+              21 Days of Power, you can ignore this email.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:26px;border-top:1px solid #2c2c34;text-align:center;">
+            <p style="margin:22px 0 0;color:#6e6e7a;font-size:12px;line-height:1.5;">
+              10 – 30 August 2026 · with Pastor Shola Okodugha<br />
+              Streaming on YouTube — The New Church
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

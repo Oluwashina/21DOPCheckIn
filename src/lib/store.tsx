@@ -205,6 +205,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         email: email.trim().toLowerCase(),
         password,
         options: {
+          // Where the "confirm your email" link lands, if confirmation is on.
+          emailRedirectTo: `${window.location.origin}/confirm`,
           // The sign-up trigger reads these to build the profile row.
           data: {
             name: profile.name.trim(),

@@ -1,5 +1,5 @@
 import { getSessionStatus, SESSION_BLUEPRINT, toISODate } from "./program";
-import type { CheckIn, Database, Day, Session, Team, User } from "./types";
+import type { CheckIn, Database, Day, Session, SessionStatus, Team, User } from "./types";
 
 export interface AccountabilityTotals {
   total: number;
@@ -28,6 +28,61 @@ export interface MemberProgress {
 }
 
 const slotOrder = new Map(SESSION_BLUEPRINT.map((item, index) => [item.slot, index]));
+
+export interface CatchUpSession {
+  day: Day;
+  session: Session;
+  status: SessionStatus;
+  checkIn?: CheckIn;
+}
+
+/**
+ * Elapsed sessions from earlier programme days that this person has not checked
+ * in for yet. Today stays on Home — this is for backfilling after a late sign-up.
+ */
+export function getCatchUpSessions(
+  db: Database,
+  userId: string,
+  now: Date = new Date(),
+): CatchUpSession[] {
+  const today = toISODate(now);
+  const rows: CatchUpSession[] = [];
+
+  for (const day of db.days) {
+    if (day.date >= today) continue;
+
+    for (const session of getSessionsForDay(db, day.id)) {
+      const status = getSessionStatus(day, session, now);
+      if (status === "upcoming") continue;
+
+      const checkIn = findCheckIn(db, userId, session.id);
+      if (!checkIn?.checked_in) {
+        rows.push({ day, session, status, checkIn });
+      }
+    }
+  }
+
+  return rows;
+}
+
+/** First missed session on a day — used when someone taps a day on the grid. */
+export function getFirstMissedSessionOnDay(
+  db: Database,
+  userId: string,
+  dayId: string,
+  now: Date = new Date(),
+): Session | undefined {
+  const day = getDayById(db, dayId);
+  if (!day) return undefined;
+
+  for (const session of getSessionsForDay(db, day.id)) {
+    const status = getSessionStatus(day, session, now);
+    if (status === "upcoming") continue;
+    if (!findCheckIn(db, userId, session.id)?.checked_in) return session;
+  }
+
+  return undefined;
+}
 
 export function sortSessions(sessions: Session[]): Session[] {
   return [...sessions].sort(

@@ -80,8 +80,8 @@ export default function RegisterPage() {
             <h2 className="text-lg font-extrabold">Confirm your email</h2>
             <p className="text-sm text-muted">
               We sent a confirmation link to{" "}
-              <strong className="text-text">{email}</strong>. Tap it, then come back and
-              sign in.
+              <strong className="text-text">{email}</strong>. Tap it and you&apos;ll be
+              signed straight in.
             </p>
             <Link href="/login" className="block text-sm font-semibold text-gold-soft">
               Go to sign in
@@ -130,7 +130,7 @@ export default function RegisterPage() {
             </Field>
 
             <Field
-              label="Service team"
+              label="Team"
               hint={
                 sortedTeams.length === 0
                   ? "No teams yet — an admin needs to add them first."

@@ -107,7 +107,7 @@ export default function LoginPage() {
             <p className="text-muted">
               New here?{" "}
               <Link href="/register" className="font-semibold text-gold-soft">
-                Join your service team
+                Join your team
               </Link>
             </p>
           </div>

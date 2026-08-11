@@ -14,6 +14,7 @@ import {
 } from "@/lib/program";
 import {
   findCheckIn,
+  getCatchUpSessions,
   getCurrentDay,
   getMemberProgress,
   getMemberRowsForSession,
@@ -53,6 +54,7 @@ export default function HomePage() {
       nextDay: getNextProgramDay(db, now),
       teamToday: team ? getTeamStatsForDay(db, team.id, day.id) : null,
       progress: getMemberProgress(db, currentUser.id, now),
+      catchUp: getCatchUpSessions(db, currentUser.id, now),
       sessions: sessions.map((session) => ({
         session,
         status: getSessionStatus(day, session, now),
@@ -71,7 +73,7 @@ export default function HomePage() {
 
   if (!view || !currentUser) return null;
 
-  const { day, progress, sessions, team, teamToday, restDay, nextDay } = view;
+  const { day, progress, sessions, team, teamToday, restDay, nextDay, catchUp } = view;
   const live = sessions.find((item) => item.status === "live");
   const nextUp = sessions.find((item) => item.status === "upcoming");
   const doneToday = sessions.filter((item) => item.checkIn?.checked_in).length;
@@ -152,6 +154,41 @@ export default function HomePage() {
         </div>
         {restDay ? null : <p className="mt-3 text-sm text-muted">{nudge} 🔥</p>}
       </section>
+
+      {catchUp.length > 0 ? (
+        <section>
+          <SectionTitle
+            title="Catch up on earlier days"
+            subtitle={`${catchUp.length} session${catchUp.length === 1 ? "" : "s"} waiting`}
+            action={
+              <Link
+                href="/catch-up"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-gold-soft"
+              >
+                View all
+                <ChevronRightIcon width={14} height={14} />
+              </Link>
+            }
+          />
+          <Card className="mb-3 border-gold/25 bg-gold/5">
+            <p className="text-sm text-muted">
+              Joined after Day 1 or 2? If you were at those sessions, tap below and
+              check in — only for sessions you actually attended.
+            </p>
+          </Card>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {catchUp.slice(0, 4).map(({ session, status, checkIn, day: catchDay }) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                status={status}
+                checkIn={checkIn}
+                teamSummary={`Day ${catchDay.day_number}`}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section>
         <SectionTitle

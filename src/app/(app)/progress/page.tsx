@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 
 import { FlameIcon } from "@/components/icons";
 import { Card, ProgressBar, ProgressRing, SectionTitle } from "@/components/ui";
 import { formatShortDate, fromISODate, PROGRAM_LENGTH } from "@/lib/program";
-import { getCurrentDay, getMemberProgress, percent } from "@/lib/stats";
+import { getCurrentDay, getFirstMissedSessionOnDay, getMemberProgress, percent } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
 function encouragement(daysActive: number, daysElapsed: number, streak: number): string {
@@ -108,7 +109,7 @@ export default function ProgressPage() {
       <section>
         <SectionTitle
           title="Your programme"
-          subtitle="Each row is a week, Monday to Friday. Filled means you showed up."
+          subtitle="Each row is a week, Monday to Friday. Tap a missed day to catch up."
         />
         <Card>
           <div className="mb-2 grid grid-cols-5 gap-2 text-center text-[10px] font-bold uppercase tracking-wide text-faint sm:gap-2.5">
@@ -125,10 +126,15 @@ export default function ProgressPage() {
               const isToday = day.day_number === currentDay.day_number;
               const pending = elapsed === 0;
               const intensity = attended === 0 ? 0 : attended / 3;
+              const missed = !pending && attended === 0;
+              const partial = !pending && attended > 0 && attended < elapsed;
+              const missedSession =
+                db && currentUser && (missed || partial)
+                  ? getFirstMissedSessionOnDay(db, currentUser.id, day.id, now)
+                  : undefined;
 
-              return (
+              const cell = (
                 <div
-                  key={day.id}
                   title={`Day ${day.day_number} · ${formatShortDate(day.date)} · ${attended}/${
                     elapsed || 3
                   } sessions`}
@@ -138,7 +144,9 @@ export default function ProgressPage() {
                       : attended > 0
                         ? "border-transparent text-ink"
                         : "border-line bg-surface-2 text-faint"
-                  } ${isToday ? "ring-2 ring-gold ring-offset-2 ring-offset-surface" : ""}`}
+                  } ${isToday ? "ring-2 ring-gold ring-offset-2 ring-offset-surface" : ""} ${
+                    missedSession ? "hover:border-gold/40 hover:bg-surface-2" : ""
+                  }`}
                   style={
                     attended > 0 && !pending
                       ? {
@@ -158,6 +166,14 @@ export default function ProgressPage() {
                     </span>
                   ) : null}
                 </div>
+              );
+
+              return missedSession ? (
+                <Link key={day.id} href={`/session/${missedSession.id}`}>
+                  {cell}
+                </Link>
+              ) : (
+                <div key={day.id}>{cell}</div>
               );
             })}
           </div>
