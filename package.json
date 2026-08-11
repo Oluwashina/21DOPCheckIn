@@ -1,0 +1,28 @@
+{
+  "name": "21dopcheckin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "21 Days of Power — church accountability and check-in platform for The New Church",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "verify": "tsc --ignoreConfig --module commonjs --target es2022 --lib es2022,dom --types node --outDir .tmp-verify --skipLibCheck --esModuleInterop scripts/verify-flow.ts && node .tmp-verify/scripts/verify-flow.js"
+  },
+  "dependencies": {
+    "framer-motion": "^13.1.0",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  }
+}
