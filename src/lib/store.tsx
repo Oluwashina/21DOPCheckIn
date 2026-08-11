@@ -67,15 +67,18 @@ function messageFrom(error: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
-/** Supabase's auth errors are terse; say what to do next instead. */
+/** Keep credential errors clear without saying which field is wrong. */
 function signInMessage(raw: string): string {
-  if (/invalid login credentials/i.test(raw)) {
-    return "That email and password don't match. Try again, or reset your password below.";
+  if (/invalid login credentials|invalid credentials/i.test(raw)) {
+    return "Invalid credentials. Please check your details and try again.";
   }
   if (/email not confirmed/i.test(raw)) {
-    return "Confirm your email address first — check your inbox for the link.";
+    return "Please confirm your email first — check your inbox for the link.";
   }
-  return raw;
+  if (/rate limit|too many requests/i.test(raw)) {
+    return "Too many attempts. Please wait a moment and try again.";
+  }
+  return "Invalid credentials. Please check your details and try again.";
 }
 
 function signUpMessage(raw: string): string {
@@ -112,6 +115,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const loadForSession = useCallback(
     async (sessionUserId: string) => {
+      if (
+        userId === sessionUserId &&
+        (status === "ready" || status === "needs_profile" || status === "deactivated")
+      ) {
+        return;
+      }
+
       const loaded = await adapter.loadDatabase();
       const profile = loaded.users.find((user) => user.id === sessionUserId);
 
@@ -129,7 +139,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setUserId(sessionUserId);
       setStatus(profile.active ? "ready" : "deactivated");
     },
-    [adapter],
+    [adapter, status, userId],
   );
 
   useEffect(() => {
@@ -198,15 +208,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error: authError } = await getSupabase().auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { data, error: authError } = await getSupabase().auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    if (authError) throw new Error(signInMessage(authError.message));
-    // onAuthStateChange picks it up from here and loads the data.
-  }, []);
+      if (authError) throw new Error(signInMessage(authError.message));
+
+      const sessionUserId = data.session?.user.id ?? data.user?.id;
+      if (sessionUserId) await loadForSession(sessionUserId);
+    },
+    [loadForSession],
+  );
 
   const signUp = useCallback(
     async (email: string, password: string, profile: ProfileInput) => {

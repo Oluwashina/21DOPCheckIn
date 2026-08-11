@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "ready") router.replace("/");
+    if (status === "ready" || status === "needs_profile") router.replace("/");
   }, [status, router]);
 
   async function submit(event: React.FormEvent) {
@@ -39,7 +39,11 @@ export default function LoginPage() {
       await signIn(email, password);
       router.replace("/");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Please try again.");
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Invalid credentials. Please check your details and try again.",
+      );
       setBusy(false);
     }
   }
