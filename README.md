@@ -35,7 +35,7 @@ create a project. Pick the region closest to your congregation.
 
 **2. Create the tables.** Open the SQL Editor, paste the whole of
 [`supabase/schema.sql`](supabase/schema.sql), and run it. That creates the three tables,
-the fourteen service teams, the sign-up trigger and every security policy. It also marks
+the fifteen service teams, the sign-up trigger and every security policy. It also marks
 `thedevoluwashina@gmail.com` as the admin — change that line first if you want a
 different address.
 
@@ -117,7 +117,7 @@ You keep three controls over everyone: their **service team**, their **role**, a
 
 ### Where the service teams come from
 
-The sign-up dropdown reads the `teams` table live, and `schema.sql` seeds all fourteen
+The sign-up dropdown reads the `teams` table live, and `schema.sql` seeds all fifteen
 teams when you run it. To check they landed:
 
 ```sql

@@ -81,7 +81,8 @@ insert into teams (name) values
   ('Data'),
   ('Welcome and Integration'),
   ('Tribe Leaders'),
-  ('CEM');
+  ('CEM'),
+  ('Tephilah');
 
 -- ---------------------------------------------------------------------------
 -- Helpers

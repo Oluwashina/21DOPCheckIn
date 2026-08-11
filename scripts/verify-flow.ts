@@ -161,7 +161,7 @@ function main() {
     "evening session runs at 7pm per the flyer",
     SESSION_BLUEPRINT.some((s) => s.slot === "power_night" && s.time === "19:00"),
   );
-  check(`${TEAM_NAMES.length} service teams configured`, TEAM_NAMES.length === 14);
+  check(`${TEAM_NAMES.length} service teams configured`, TEAM_NAMES.length === 15);
 
   const day = getCurrentDay(db);
   const todayNumber = getDayNumberForDate(todayISO(), PROGRAM_DATES);

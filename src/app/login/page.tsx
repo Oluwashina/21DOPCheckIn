@@ -121,6 +121,8 @@ export default function LoginPage() {
             height={1024}
             sizes="(max-width: 480px) 100vw, 448px"
             className="h-auto w-full"
+            priority
+            loading="eager"
           />
         </div>
 

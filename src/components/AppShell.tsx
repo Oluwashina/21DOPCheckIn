@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
 import { CompleteProfile } from "./CompleteProfile";
+import { InstallHint } from "./InstallHint";
 import { Wordmark } from "./Logo";
 import { isNavItemActive, navForRole } from "./nav";
 import { Avatar, Button } from "./ui";
@@ -132,6 +133,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main className="px-4 pt-5 lg:px-0 lg:pt-8">{children}</main>
         </div>
       </div>
+
+      <InstallHint />
 
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-ink/90 backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 py-1.5">

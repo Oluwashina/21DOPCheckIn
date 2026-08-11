@@ -18,6 +18,15 @@ export const metadata: Metadata = {
     description: `${CHURCH_NAME} · ${PROGRAM_DATE_RANGE}`,
     images: ["/21-days-of-power-flyer.png"],
   },
+  appleWebApp: {
+    capable: true,
+    title: PROGRAM_NAME,
+    statusBarStyle: "black-translucent",
+  },
+  applicationName: PROGRAM_NAME,
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {

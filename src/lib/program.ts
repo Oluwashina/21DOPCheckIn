@@ -45,6 +45,7 @@ export const TEAM_NAMES = [
   "Welcome and Integration",
   "Tribe Leaders",
   "CEM",
+  "Tephilah",
 ];
 
 /** `yyyy-mm-dd` for a date, in local time (never UTC-shifted). */
