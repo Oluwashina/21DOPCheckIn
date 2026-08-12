@@ -13,7 +13,7 @@ Three sessions run each programme day, **Monday to Friday**:
 | --- | --- |
 | Whirlwind of Testimonies | 7:00 AM |
 | Uncut Series | 1:00 PM |
-| Evening Session | 7:00 PM |
+| Evening Session | 6:30 PM |
 
 The programme window is **10 – 30 August 2026**. Saturdays and Sundays are not check-in
 days at all, which leaves **15 check-in days**, ending Friday 28 August. Weekends never

@@ -27,7 +27,7 @@ export const SESSION_BLUEPRINT: {
 }[] = [
   { slot: "whirlwind", name: "Whirlwind of Testimonies", time: "07:00", label: "7:00 AM" },
   { slot: "uncut", name: "Uncut Series", time: "13:00", label: "1:00 PM" },
-  { slot: "power_night", name: "Evening Session", time: "19:00", label: "7:00 PM" },
+  { slot: "power_night", name: "Evening Session", time: "18:30", label: "6:30 PM" },
 ];
 
 export const TEAM_NAMES = [
