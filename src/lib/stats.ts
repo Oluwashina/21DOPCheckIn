@@ -13,6 +13,8 @@ export interface MemberRow {
   checked_in: boolean;
   shared_link: boolean;
   liked_youtube: boolean;
+  /** When they checked in for this scope — from check_ins.updated_at */
+  checked_in_at: string | null;
 }
 
 export interface MemberProgress {
@@ -218,6 +220,7 @@ export function getMemberRowsForSession(
       checked_in: Boolean(row?.checked_in),
       shared_link: Boolean(row?.shared_link),
       liked_youtube: Boolean(row?.liked_youtube),
+      checked_in_at: row?.checked_in ? (row.updated_at ?? null) : null,
     };
   });
 }
@@ -236,10 +239,16 @@ export function getMemberRowsForDay(
   for (const row of db.check_ins) {
     if (!sessionIds.has(row.session_id)) continue;
     const existing = byUser.get(row.user_id);
+    const checked_in = Boolean(existing?.checked_in) || row.checked_in;
+    let checked_in_at = existing?.checked_in_at ?? null;
+    if (row.checked_in && (!checked_in_at || row.updated_at > checked_in_at)) {
+      checked_in_at = row.updated_at;
+    }
     byUser.set(row.user_id, {
-      checked_in: Boolean(existing?.checked_in) || row.checked_in,
+      checked_in,
       shared_link: Boolean(existing?.shared_link) || row.shared_link,
       liked_youtube: Boolean(existing?.liked_youtube) || row.liked_youtube,
+      checked_in_at,
     });
   }
 
@@ -250,6 +259,7 @@ export function getMemberRowsForDay(
       checked_in: Boolean(row?.checked_in),
       shared_link: Boolean(row?.shared_link),
       liked_youtube: Boolean(row?.liked_youtube),
+      checked_in_at: row?.checked_in_at ?? null,
     };
   });
 }

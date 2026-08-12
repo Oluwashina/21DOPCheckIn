@@ -2,6 +2,7 @@
 
 import { CheckIcon, ShareIcon, ThumbIcon } from "./icons";
 import { Avatar, EmptyState } from "./ui";
+import { formatCheckInTime } from "@/lib/csv";
 import type { MemberRow } from "@/lib/stats";
 
 const COLUMNS = [
@@ -28,11 +29,13 @@ export function MemberAccountabilityList({
   leadId,
   emptyTitle = "No members yet",
   emptyDescription,
+  showCheckInTime = false,
 }: {
   rows: MemberRow[];
   leadId?: string | null;
   emptyTitle?: string;
   emptyDescription?: string;
+  showCheckInTime?: boolean;
 }) {
   if (rows.length === 0) {
     return <EmptyState icon="🙂" title={emptyTitle} description={emptyDescription} />;
@@ -64,6 +67,11 @@ export function MemberAccountabilityList({
                   </span>
                 ))}
               </p>
+              {showCheckInTime && row.checked_in && row.checked_in_at ? (
+                <p className="mt-1 text-[11px] text-muted">
+                  Checked in at {formatCheckInTime(row.checked_in_at)}
+                </p>
+              ) : null}
             </div>
           </div>
         ))}
@@ -80,6 +88,9 @@ export function MemberAccountabilityList({
                   {column.label}
                 </th>
               ))}
+              {showCheckInTime ? (
+                <th className="px-4 py-3 text-right font-semibold">Checked in at</th>
+              ) : null}
             </tr>
           </thead>
           <tbody>
@@ -104,6 +115,13 @@ export function MemberAccountabilityList({
                     <Indicator active={row[column.key]} />
                   </td>
                 ))}
+                {showCheckInTime ? (
+                  <td className="px-4 py-3 text-right text-xs text-muted">
+                    {row.checked_in && row.checked_in_at
+                      ? formatCheckInTime(row.checked_in_at)
+                      : "—"}
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

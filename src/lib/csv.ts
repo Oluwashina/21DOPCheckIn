@@ -14,6 +14,23 @@ export function formatReportDateTime(iso: string | null | undefined): string {
   });
 }
 
+/** Short time for team lead views — time only if today, else date + time. */
+export function formatCheckInTime(iso: string, now = new Date()): string {
+  const date = new Date(iso);
+  const sameDay =
+    date.toLocaleDateString("en-CA", { timeZone: REPORT_TIME_ZONE }) ===
+    now.toLocaleDateString("en-CA", { timeZone: REPORT_TIME_ZONE });
+  if (sameDay) {
+    return date.toLocaleString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: REPORT_TIME_ZONE,
+    });
+  }
+  return formatReportDateTime(iso);
+}
+
 function escapeCell(value: string | number | boolean): string {
   const text = String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;

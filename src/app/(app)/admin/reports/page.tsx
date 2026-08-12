@@ -13,9 +13,10 @@ import {
   Select,
   StatCard,
 } from "@/components/ui";
-import { downloadCSV, formatReportDateTime, toCSV } from "@/lib/csv";
+import { downloadCSV, formatCheckInTime, formatReportDateTime, toCSV } from "@/lib/csv";
 import { getSessionStatus, shortTimeLabel } from "@/lib/program";
 import {
+  findCheckIn,
   getCurrentDay,
   getSessionsForDay,
   getTeamMembers,
@@ -23,7 +24,12 @@ import {
   tallyCheckIns,
 } from "@/lib/stats";
 import { useStore } from "@/lib/store";
-import type { Team, User } from "@/lib/types";
+import type { Session, Team, User } from "@/lib/types";
+
+interface MemberCheckInTime {
+  label: string;
+  at: string;
+}
 
 interface MemberReportRow {
   user: User;
@@ -32,6 +38,8 @@ interface MemberReportRow {
   liked: number;
   possible: number;
   rate: number;
+  checkInTimes: MemberCheckInTime[];
+  latestCheckInAt: string | null;
 }
 
 interface TeamReportRow {
@@ -48,17 +56,40 @@ interface TeamReportRow {
 function buildMemberRows(
   db: NonNullable<ReturnType<typeof useStore>["db"]>,
   members: User[],
-  sessionIds: string[],
+  sessions: Session[],
 ): MemberReportRow[] {
+  const sessionIds = sessions.map((session) => session.id);
   const possible = sessionIds.length;
+  const dayById = new Map(db.days.map((day) => [day.id, day]));
+
   return members
     .map((user) => {
       const totals = tallyCheckIns(db, [user.id], sessionIds);
+      const checkInTimes: MemberCheckInTime[] = [];
+
+      for (const session of sessions) {
+        const checkIn = findCheckIn(db, user.id, session.id);
+        if (!checkIn?.checked_in) continue;
+        const day = dayById.get(session.day_id);
+        const label =
+          sessions.length === 1
+            ? session.name
+            : day
+              ? `Day ${day.day_number} · ${shortTimeLabel(session.time)}`
+              : session.name;
+        checkInTimes.push({ label, at: checkIn.updated_at });
+      }
+
+      checkInTimes.sort((a, b) => b.at.localeCompare(a.at));
+      const latestCheckInAt = checkInTimes[0]?.at ?? null;
+
       return {
         user,
         ...totals,
         possible,
         rate: percent(totals.checkedIn, possible),
+        checkInTimes,
+        latestCheckInAt,
       };
     })
     .sort((a, b) => b.rate - a.rate || a.user.name.localeCompare(b.user.name));
@@ -101,7 +132,7 @@ export default function AdminReportsPage() {
           ...totals,
           possible,
           rate: percent(totals.checkedIn, possible),
-          memberRows: buildMemberRows(db, members, sessionIds),
+          memberRows: buildMemberRows(db, members, sessions),
         };
       })
       .sort((a, b) => b.rate - a.rate || a.team.name.localeCompare(b.team.name));
@@ -292,7 +323,7 @@ export default function AdminReportsPage() {
       <section>
         <SectionTitle
           title="Team breakdown"
-          subtitle="Tap a team to see each member · times in CSV use WAT (Lagos)"
+          subtitle="Tap a team to see each member and when they checked in (WAT)"
         />
         {teams.length === 0 || sessions.length === 0 ? (
           <EmptyState
@@ -350,11 +381,14 @@ export default function AdminReportsPage() {
                         </p>
                       ) : (
                         <div className="overflow-x-auto">
-                          <table className="w-full min-w-[520px] text-sm">
+                          <table className="w-full min-w-[640px] text-sm">
                             <thead>
                               <tr className="border-b border-line text-[11px] uppercase tracking-[0.08em] text-faint">
                                 <th className="px-4 py-2.5 text-left font-semibold sm:px-5">
                                   Member
+                                </th>
+                                <th className="px-3 py-2.5 text-left font-semibold">
+                                  Check-in times
                                 </th>
                                 <th className="px-3 py-2.5 text-right font-semibold">
                                   Check-ins
@@ -370,10 +404,32 @@ export default function AdminReportsPage() {
                               {row.memberRows.map((memberRow) => (
                                 <tr
                                   key={memberRow.user.id}
-                                  className="border-b border-line/50 last:border-0"
+                                  className="border-b border-line/50 last:border-0 align-top"
                                 >
                                   <td className="px-4 py-2.5 font-semibold sm:px-5">
                                     {memberRow.user.name}
+                                    {memberRow.latestCheckInAt ? (
+                                      <p className="mt-0.5 text-[11px] font-normal text-faint sm:hidden">
+                                        Latest {formatCheckInTime(memberRow.latestCheckInAt, now)}
+                                      </p>
+                                    ) : null}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-left text-xs text-muted">
+                                    {memberRow.checkInTimes.length === 0 ? (
+                                      <span className="text-faint">—</span>
+                                    ) : (
+                                      <ul className="space-y-1">
+                                        {memberRow.checkInTimes.map((item) => (
+                                          <li key={`${item.label}-${item.at}`}>
+                                            <span className="font-semibold text-text">
+                                              {item.label}
+                                            </span>
+                                            <span className="text-faint"> · </span>
+                                            {formatReportDateTime(item.at)}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
                                   </td>
                                   <td className="px-3 py-2.5 text-right text-muted">
                                     {memberRow.checkedIn}/{memberRow.possible}

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { RoleGuard } from "@/components/RoleGuard";
 import { Chips } from "@/components/SessionFilterChips";
 import { Avatar, Badge, Card, EmptyState, Input, ProgressBar, SectionTitle } from "@/components/ui";
+import { formatCheckInTime } from "@/lib/csv";
 import { PROGRAM_LENGTH } from "@/lib/program";
 import {
   getCurrentDay,
@@ -180,7 +181,14 @@ function MyTeam() {
                           }`}
                         >
                           <span>{item.done ? "✓" : "○"}</span>
-                          {item.done ? item.on : item.off}
+                          <span>
+                            {item.done ? item.on : item.off}
+                            {item.on === "Checked in" && row.checked_in && row.checked_in_at ? (
+                              <span className="ml-1.5 font-normal text-muted">
+                                · {formatCheckInTime(row.checked_in_at)}
+                              </span>
+                            ) : null}
+                          </span>
                         </li>
                       ))}
                     </ul>

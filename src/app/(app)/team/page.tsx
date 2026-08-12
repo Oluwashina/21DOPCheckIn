@@ -190,6 +190,7 @@ function TeamDashboard() {
         <MemberAccountabilityList
           rows={rows}
           leadId={team.team_lead_id}
+          showCheckInTime
           emptyTitle="No members on this team yet"
           emptyDescription="Ask an admin to add members to your service team."
         />
