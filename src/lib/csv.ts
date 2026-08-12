@@ -1,3 +1,19 @@
+const REPORT_TIME_ZONE = "Africa/Lagos";
+
+/** Human-readable date/time for exports and admin reports (WAT). */
+export function formatReportDateTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: REPORT_TIME_ZONE,
+  });
+}
+
 function escapeCell(value: string | number | boolean): string {
   const text = String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
