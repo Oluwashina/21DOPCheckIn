@@ -1,17 +1,24 @@
 const REPORT_TIME_ZONE = "Africa/Lagos";
 
-/** Human-readable date/time for exports and admin reports (WAT). */
-export function formatReportDateTime(iso: string | null | undefined): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
+function formatReportTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    hour: "numeric",
     minute: "2-digit",
     hour12: true,
     timeZone: REPORT_TIME_ZONE,
   });
+}
+
+/** Human-readable date/time for exports and admin reports (WAT). */
+export function formatReportDateTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const datePart = new Date(iso).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: REPORT_TIME_ZONE,
+  });
+  return `${datePart}, ${formatReportTime(iso)}`;
 }
 
 /** Short time for team lead views — time only if today, else date + time. */
@@ -20,14 +27,7 @@ export function formatCheckInTime(iso: string, now = new Date()): string {
   const sameDay =
     date.toLocaleDateString("en-CA", { timeZone: REPORT_TIME_ZONE }) ===
     now.toLocaleDateString("en-CA", { timeZone: REPORT_TIME_ZONE });
-  if (sameDay) {
-    return date.toLocaleString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: REPORT_TIME_ZONE,
-    });
-  }
+  if (sameDay) return formatReportTime(iso);
   return formatReportDateTime(iso);
 }
 
