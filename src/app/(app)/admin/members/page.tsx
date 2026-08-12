@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { AdminOnly } from "@/components/AdminOnly";
 import { TrashIcon } from "@/components/icons";
 import { Chips } from "@/components/SessionFilterChips";
 import {
@@ -22,6 +23,7 @@ import type { Role } from "@/lib/types";
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: "member", label: "Member" },
   { value: "team_lead", label: "Team Lead" },
+  { value: "reports", label: "Reports only" },
   { value: "admin", label: "Admin" },
 ];
 
@@ -54,6 +56,7 @@ export default function AdminMembersPage() {
   if (!db) return null;
 
   return (
+    <AdminOnly>
     <div className="space-y-6 pb-4">
       <section>
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Members</h1>
@@ -201,5 +204,6 @@ export default function AdminMembersPage() {
         )}
       </section>
     </div>
+    </AdminOnly>
   );
 }

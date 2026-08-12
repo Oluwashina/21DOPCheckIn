@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { AdminOnly } from "@/components/AdminOnly";
 import { ChevronRightIcon } from "@/components/icons";
 import { Badge, Card, EmptyState, ProgressBar, SectionTitle, StatCard } from "@/components/ui";
 import { formatLongDate, getSessionStatus, PROGRAM_LENGTH, shortTimeLabel } from "@/lib/program";
@@ -59,6 +60,7 @@ export default function AdminDashboardPage() {
   const elapsedToday = sessions.filter((item) => item.status !== "upcoming").length;
 
   return (
+    <AdminOnly>
     <div className="space-y-7 pb-4">
       <section>
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-faint">
@@ -197,5 +199,6 @@ export default function AdminDashboardPage() {
         )}
       </section>
     </div>
+    </AdminOnly>
   );
 }

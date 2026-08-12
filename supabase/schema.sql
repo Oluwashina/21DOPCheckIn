@@ -6,7 +6,7 @@
 -- date never needs a migration. A check-in points at a session by its stable
 -- id, `<date>_<slot>`, e.g. `2026-08-10_whirlwind`.
 
-create type user_role as enum ('member', 'team_lead', 'admin');
+create type user_role as enum ('member', 'team_lead', 'admin', 'reports');
 
 -- ---------------------------------------------------------------------------
 -- Tables
@@ -104,6 +104,11 @@ $$;
 create function is_admin() returns boolean
   language sql stable security definer set search_path = public as $$
   select coalesce(my_role() = 'admin', false);
+$$;
+
+create function is_reports() returns boolean
+  language sql stable security definer set search_path = public as $$
+  select coalesce(my_role() = 'reports', false);
 $$;
 
 -- ---------------------------------------------------------------------------
@@ -207,6 +212,7 @@ create policy "read yourself, your team, or everyone if admin"
   on profiles for select to authenticated using (
     id = auth.uid()
     or is_admin()
+    or is_reports()
     or (team_id is not null and team_id = my_team())
   );
 
@@ -228,6 +234,7 @@ create policy "manage your own check-ins"
 create policy "read check-ins for your team, or all if admin"
   on check_ins for select to authenticated using (
     is_admin()
+    or is_reports()
     or exists (
       select 1 from profiles p
       where p.id = check_ins.user_id

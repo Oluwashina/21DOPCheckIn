@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { AdminOnly } from "@/components/AdminOnly";
 import { Chips } from "@/components/SessionFilterChips";
 import { Badge, Card, ProgressBar, SectionTitle } from "@/components/ui";
 import {
@@ -57,6 +58,7 @@ export default function AdminSessionsPage() {
   const { day, sessions, participants } = view;
 
   return (
+    <AdminOnly>
     <div className="space-y-6 pb-4">
       <section>
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Sessions</h1>
@@ -145,5 +147,6 @@ export default function AdminSessionsPage() {
         </div>
       </section>
     </div>
+    </AdminOnly>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { AdminOnly } from "@/components/AdminOnly";
 import { EditIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import {
   Badge,
@@ -47,6 +48,7 @@ export default function AdminTeamsPage() {
   }
 
   return (
+    <AdminOnly>
     <div className="space-y-6 pb-4">
       <section>
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Teams</h1>
@@ -207,5 +209,6 @@ export default function AdminTeamsPage() {
         )}
       </section>
     </div>
+    </AdminOnly>
   );
 }

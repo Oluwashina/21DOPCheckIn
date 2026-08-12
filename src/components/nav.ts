@@ -39,8 +39,15 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/reports", label: "Reports", icon: ChartIcon },
 ];
 
+const REPORTS_NAV: NavItem[] = [
+  { href: "/", label: "Home", icon: HomeIcon, exact: true },
+  { href: "/admin/reports", label: "Reports", icon: ChartIcon, exact: true },
+  { href: "/profile", label: "Profile", icon: UserIcon },
+];
+
 export function navForRole(role: Role): NavItem[] {
   if (role === "admin") return ADMIN_NAV;
+  if (role === "reports") return REPORTS_NAV;
   if (role === "team_lead") return TEAM_LEAD_NAV;
   return MEMBER_NAV;
 }
@@ -50,7 +57,8 @@ export function isNavItemActive(item: NavItem, pathname: string): boolean {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-/** Everyone lands on their own check-in screen — including the admin. */
-export function homeForRole(_role: Role): string {
+/** Where to send someone who opened a screen their role cannot use. */
+export function homeForRole(role: Role): string {
+  if (role === "reports") return "/admin/reports";
   return "/";
 }

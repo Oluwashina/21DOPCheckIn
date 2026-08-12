@@ -1,0 +1,8 @@
+-- Add the reports-only role to an EXISTING Supabase project.
+--
+-- Run as TWO separate queries in the SQL editor (not one block):
+--   1. add-reports-role-step1-enum.sql
+--   2. add-reports-role-step2-policies.sql
+--
+-- Step 1 must commit before step 2 — otherwise you get:
+--   "unsafe use of new value \"reports\" of enum type user_role"

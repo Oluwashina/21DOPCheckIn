@@ -1,4 +1,4 @@
-export type Role = "member" | "team_lead" | "admin";
+export type Role = "member" | "team_lead" | "admin" | "reports";
 
 export type SessionSlot = "whirlwind" | "uncut" | "power_night";
 

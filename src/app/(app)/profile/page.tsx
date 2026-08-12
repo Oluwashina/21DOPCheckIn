@@ -15,11 +15,12 @@ import { Avatar, Badge, Button, Card, Field, Input, SectionTitle } from "@/compo
 import { getMemberProgress, getTeamById } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
-const ROLE_LABEL = {
+const ROLE_LABEL: Record<string, string> = {
   member: "Member",
   team_lead: "Team Lead",
   admin: "Admin",
-} as const;
+  reports: "Reports",
+};
 
 export default function ProfilePage() {
   const { db, currentUser, now, signOut, updateUser } = useStore();
@@ -64,6 +65,12 @@ export default function ProfilePage() {
       label: "Admin dashboard",
       icon: ShieldIcon,
       show: currentUser.role === "admin",
+    },
+    {
+      href: "/admin/reports",
+      label: "Programme reports",
+      icon: GridIcon,
+      show: currentUser.role === "reports",
     },
   ].filter((link) => link.show);
 

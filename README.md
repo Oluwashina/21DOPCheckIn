@@ -185,6 +185,8 @@ Gold is a light surface, so anything on it uses `text-ink` rather than white. `m
 
 **Member** — Home (today's sessions), My Progress, Profile.
 **Team Lead** — Home, Team Dashboard, My Team, Profile.
+**Reports** — Home, Reports (programme-wide, read-only), Profile. For people who need
+exports and breakdowns without admin controls.
 **Admin** — Home, Dashboard, Teams, Members, Reports (Sessions is linked from the
 dashboard).
 
