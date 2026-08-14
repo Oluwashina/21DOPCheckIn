@@ -38,6 +38,12 @@ import {
   isRestDay,
 } from "../src/lib/stats";
 import { toCSV } from "../src/lib/csv";
+import {
+  buildProgramCalendarIcs,
+  calendarIncludesDay5SixPm,
+  countCalendarEvents,
+} from "../src/lib/calendar";
+import { getSessionReminder, REMINDER_MINUTES_BEFORE } from "../src/lib/reminders";
 import type { CheckIn, Database, User } from "../src/lib/types";
 
 let failures = 0;
@@ -181,6 +187,41 @@ function main() {
     resolveSessionTime(5, "power_night", "18:30") === "18:00" &&
       resolveSessionTime(4, "power_night", "18:30") === "18:30",
   );
+
+  console.log("\nREMINDERS AND CALENDAR");
+  const ics = buildProgramCalendarIcs(new Date("2026-08-01T12:00:00.000Z"));
+  check(
+    "calendar export includes every session",
+    countCalendarEvents(ics) === PROGRAM_LENGTH * 3,
+    countCalendarEvents(ics),
+  );
+  check("calendar includes day 5 evening at 6pm", calendarIncludesDay5SixPm(ics));
+  check(
+    "calendar events include 30-minute alerts",
+    (ics.match(/BEGIN:VALARM/g) ?? []).length === PROGRAM_LENGTH * 3,
+  );
+
+  const reminderDay = db.days.find((d) => d.day_number === 1)!;
+  const reminderSession = getSessionsForDay(db, reminderDay.id)[0];
+  const reminderStart = new Date("2026-08-10T06:35:00");
+  check(
+    "in-app reminder fires within 30 minutes of start",
+    getSessionReminder(db, "member-a", reminderStart)?.session.id === reminderSession.id,
+  );
+  check(
+    "in-app reminder is quiet outside the 30-minute window",
+    getSessionReminder(db, "member-a", new Date("2026-08-10T05:00:00")) === null,
+  );
+  check(
+    "in-app reminder is quiet after check-in",
+    (() => {
+      const reminderDb = buildFixture();
+      reminderDb.check_ins.push(checkIn("member-a", reminderSession.id));
+      return getSessionReminder(reminderDb, "member-a", reminderStart) === null;
+    })(),
+  );
+  check("reminder window is 30 minutes", REMINDER_MINUTES_BEFORE === 30);
+
   check(`${TEAM_NAMES.length} service teams configured`, TEAM_NAMES.length === 15);
 
   const day = getCurrentDay(db);

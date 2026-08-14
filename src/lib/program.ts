@@ -213,6 +213,14 @@ export function getSessionStatus(
   return "completed";
 }
 
+/** Local start time for a session on its programme day. */
+export function sessionStartAt(day: Day, session: Session): Date {
+  const [h, m] = session.time.split(":").map(Number);
+  const start = fromISODate(day.date);
+  start.setHours(h, m, 0, 0);
+  return start;
+}
+
 export const SESSION_STATUS_LABEL: Record<SessionStatus, string> = {
   upcoming: "Upcoming",
   live: "Live now",

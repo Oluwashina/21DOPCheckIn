@@ -243,5 +243,6 @@ No chat, payments, CRM, sermon management, ticketing, social feed or messaging. 
 does one thing: show up, check in, stay accountable.
 
 Notifications are future-ready but not wired up — session times and statuses are already
-computed, so reminders ("the Evening Session starts in 30 minutes") only need a delivery
-channel.
+computed. **In-app banners** (30 minutes before and while live) and **calendar export**
+(`.ics` with 30-minute alerts) are available from Profile and the home reminder banner.
+Web push is not implemented yet.

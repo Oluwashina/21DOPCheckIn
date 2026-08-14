@@ -6,6 +6,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { CompleteProfile } from "./CompleteProfile";
 import { InstallHint } from "./InstallHint";
+import { SessionReminderBanner } from "./SessionReminderBanner";
 import { Wordmark } from "./Logo";
 import { isNavItemActive, navForRole } from "./nav";
 import { Avatar, Button } from "./ui";
@@ -131,7 +132,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           ) : null}
 
-          <main className="px-4 pt-5 lg:px-0 lg:pt-8">{children}</main>
+          <main className="px-4 pt-5 lg:px-0 lg:pt-8">
+            <SessionReminderBanner />
+            {children}
+          </main>
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
+  CalendarIcon,
   ChevronRightIcon,
   FlameIcon,
   GridIcon,
@@ -12,6 +13,7 @@ import {
   ShieldIcon,
 } from "@/components/icons";
 import { Avatar, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
+import { downloadProgramCalendar } from "@/lib/calendar";
 import { getMemberProgress, getTeamById } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
@@ -179,6 +181,24 @@ export default function ProfilePage() {
               ))}
             </dl>
           )}
+        </Card>
+      </section>
+
+      <section>
+        <SectionTitle title="Session reminders" />
+        <Card className="space-y-3">
+          <p className="text-sm text-muted">
+            Add the full programme to your phone calendar. Each session includes a
+            30-minute alert
+          </p>
+          <Button size="lg" fullWidth onClick={() => downloadProgramCalendar(now)}>
+            <CalendarIcon width={18} height={18} />
+            Add programme to calendar
+          </Button>
+          <p className="text-xs text-faint">
+            When the app is open, you&apos;ll also see a banner 30 minutes before each
+            session and while it&apos;s live.
+          </p>
         </Card>
       </section>
 
