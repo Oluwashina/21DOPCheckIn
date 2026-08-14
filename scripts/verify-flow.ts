@@ -16,6 +16,7 @@ import {
   PROGRAM_END_DATE,
   PROGRAM_LENGTH,
   PROGRAM_START_DATE,
+  resolveSessionTime,
   sessionId,
   SESSION_BLUEPRINT,
   TEAM_NAMES,
@@ -158,8 +159,27 @@ function main() {
     db.days.every((d, i) => i === 0 || d.date > db.days[i - 1].date),
   );
   check(
-    "evening session runs at 6:30pm per the flyer",
+    "evening session defaults to 6:30pm",
     SESSION_BLUEPRINT.some((s) => s.slot === "power_night" && s.time === "18:30"),
+  );
+  const day5 = db.days.find((d) => d.day_number === 5);
+  const day5Evening = day5
+    ? getSessionsForDay(db, day5.id).find((s) => s.slot === "power_night")
+    : undefined;
+  check("day 5 evening session starts at 6pm", day5Evening?.time === "18:00", day5Evening?.time);
+  const day4 = db.days.find((d) => d.day_number === 4);
+  const day4Evening = day4
+    ? getSessionsForDay(db, day4.id).find((s) => s.slot === "power_night")
+    : undefined;
+  check(
+    "other days keep the default evening start",
+    day4Evening?.time === "18:30",
+    day4Evening?.time,
+  );
+  check(
+    "session time overrides resolve correctly",
+    resolveSessionTime(5, "power_night", "18:30") === "18:00" &&
+      resolveSessionTime(4, "power_night", "18:30") === "18:30",
   );
   check(`${TEAM_NAMES.length} service teams configured`, TEAM_NAMES.length === 15);
 

@@ -11,7 +11,6 @@ import {
   getSessionStatus,
   PROGRAM_DATE_RANGE,
   PROGRAM_LENGTH,
-  SESSION_BLUEPRINT,
   shortTimeLabel,
   YOUTUBE_CHANNEL_NAME,
 } from "@/lib/program";
@@ -72,13 +71,13 @@ export default function AdminSessionsPage() {
 
       <Card>
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-faint">
-          Daily schedule
+          Schedule · Day {day.day_number}
         </p>
         <ul className="space-y-2.5">
-          {SESSION_BLUEPRINT.map((item) => (
-            <li key={item.slot} className="flex items-center justify-between gap-3">
-              <span className="text-[15px] font-semibold">{item.name}</span>
-              <span className="shrink-0 text-sm text-muted">{item.label}</span>
+          {sessions.map(({ session }) => (
+            <li key={session.id} className="flex items-center justify-between gap-3">
+              <span className="text-[15px] font-semibold">{session.name}</span>
+              <span className="shrink-0 text-sm text-muted">{shortTimeLabel(session.time)}</span>
             </li>
           ))}
         </ul>

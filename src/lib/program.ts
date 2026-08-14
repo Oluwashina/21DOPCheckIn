@@ -30,6 +30,24 @@ export const SESSION_BLUEPRINT: {
   { slot: "power_night", name: "Evening Session", time: "18:30", label: "6:30 PM" },
 ];
 
+/**
+ * Per-day session start overrides, keyed by programme day number.
+ * Use when a session on one day differs from `SESSION_BLUEPRINT`.
+ */
+export const SESSION_TIME_OVERRIDES: Partial<
+  Record<number, Partial<Record<SessionSlot, string>>>
+> = {
+  5: { power_night: "18:00" },
+};
+
+export function resolveSessionTime(
+  dayNumber: number,
+  slot: SessionSlot,
+  defaultTime: string,
+): string {
+  return SESSION_TIME_OVERRIDES[dayNumber]?.[slot] ?? defaultTime;
+}
+
 export const TEAM_NAMES = [
   "The New Music",
   "Amplified",
@@ -128,13 +146,14 @@ export function buildSchedule(dates: string[] = PROGRAM_DATES): {
   const sessions: Session[] = [];
 
   dates.forEach((date, index) => {
-    days.push({ id: date, day_number: index + 1, date });
+    const dayNumber = index + 1;
+    days.push({ id: date, day_number: dayNumber, date });
 
     for (const blueprint of SESSION_BLUEPRINT) {
       sessions.push({
         id: sessionId(date, blueprint.slot),
         name: blueprint.name,
-        time: blueprint.time,
+        time: resolveSessionTime(dayNumber, blueprint.slot, blueprint.time),
         day_id: date,
         slot: blueprint.slot,
       });
