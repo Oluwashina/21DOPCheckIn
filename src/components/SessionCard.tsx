@@ -88,7 +88,7 @@ export function SessionCard({
       <div className="mt-3.5 flex flex-wrap gap-1.5">
         {waiting ? (
           <span className="text-xs text-muted">
-            Starts at {shortTimeLabel(session.time)} — we&apos;ll be ready.
+            Starts at {shortTimeLabel(session.time)}. We&apos;ll be ready.
           </span>
         ) : (
           ITEMS.map(({ key, label, Icon }) => {

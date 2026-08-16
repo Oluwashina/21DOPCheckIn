@@ -82,7 +82,7 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
       return {
         browserLabel: "Safari on iPhone or iPad",
         steps: [
-          "Tap Share at the bottom of the screen — the square with an arrow pointing up.",
+          "Tap Share at the bottom of the screen. Look for the square with an arrow pointing up.",
           "Scroll the menu and tap Add to Home Screen.",
           "Tap Add in the top corner. The app icon appears on your home screen.",
         ],
@@ -93,14 +93,14 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
         steps: [
           "Tap Share at the top or bottom of the screen.",
           "Tap Add to Home Screen.",
-          "Tap Add to confirm — you're ready for one-tap check-ins.",
+          "Tap Add to confirm. You're ready for one-tap check-ins.",
         ],
       };
     case "ios-other":
       return {
         browserLabel: "Your browser on iPhone or iPad",
         steps: [
-          "Open this page in Safari if you can — it has the clearest Add to Home Screen option.",
+          "Open this page in Safari if you can. It has the clearest Add to Home Screen option.",
           "Tap Share, then Add to Home Screen.",
           "Confirm with Add.",
         ],
@@ -109,7 +109,7 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
       return {
         browserLabel: "Chrome on Android",
         steps: [
-          "Tap Install below if you see it — that's the fastest way.",
+          "Tap Install below if you see it. That's the fastest way.",
           "Otherwise tap the menu (⋮) at the top right.",
           "Tap Install app or Add to Home screen.",
         ],
@@ -120,7 +120,7 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
         steps: [
           "Tap the menu (☰ or ⋮) at the bottom or top of the screen.",
           "Tap Add page to, then Home screen.",
-          "Confirm — the icon is saved to your home screen.",
+          "Confirm. The icon is saved to your home screen.",
         ],
       };
     case "android-firefox":
@@ -136,18 +136,18 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
       return {
         browserLabel: "Your browser on Android",
         steps: [
-          "Open the browser menu — usually ⋮ or ☰.",
+          "Open the browser menu, usually ⋮ or ☰.",
           "Look for Install app or Add to Home screen.",
-          "Confirm — no Play Store download needed.",
+          "Confirm. No Play Store download needed.",
         ],
       };
     case "desktop-chrome":
       return {
         browserLabel: "Chrome on computer",
         steps: [
-          "Look for the install icon in the address bar — a monitor with a down arrow, or a plus.",
+          "Look for the install icon in the address bar: a monitor with a down arrow, or a plus.",
           "Or open the menu (⋮) → Install 21 Days of Power.",
-          "Click Install — it opens in its own window like an app.",
+          "Click Install. It opens in its own window like an app.",
         ],
       };
     case "desktop-edge":
@@ -172,7 +172,7 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
       return {
         browserLabel: "Firefox",
         steps: [
-          "Firefox doesn't install web apps the same way — bookmark this page for quick access.",
+          "Firefox doesn't install web apps the same way. Bookmark this page for quick access.",
           "On your phone, use Chrome or Safari and Add to Home screen instead.",
           "Or pin this tab in your browser for one-click return.",
         ],
@@ -183,7 +183,7 @@ export function getInstallGuide(platform: InstallPlatform): InstallGuide {
         steps: [
           "Open the browser menu.",
           "Look for Install app, Add to Home screen, or Add to Dock.",
-          "Confirm — you'll open the check-in app in one tap next time.",
+          "Confirm. You'll open the check-in app in one tap next time.",
         ],
       };
   }

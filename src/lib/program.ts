@@ -89,6 +89,14 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
+/** Sunday in-person service during programme rest days. */
+export const SUNDAY_SERVICE_VENUE = "Mainstay Event Center, Akala Expressway, Ibadan";
+export const SUNDAY_SERVICE_LABEL = "10:00 AM";
+
+export function isSunday(date: Date = new Date()): boolean {
+  return date.getDay() === 0;
+}
+
 export function isWeekend(date: Date): boolean {
   const day = date.getDay();
   return day === 0 || day === 6;

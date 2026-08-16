@@ -11,7 +11,7 @@ import { StoreProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: `${PROGRAM_NAME}: ${PROGRAM_THEME} — ${CHURCH_NAME}`,
+  title: `${PROGRAM_NAME}: ${PROGRAM_THEME} | ${CHURCH_NAME}`,
   description: `Check in, stay accountable and track your ${PROGRAM_NAME} journey with your service team. ${PROGRAM_DATE_RANGE}.`,
   openGraph: {
     title: `${PROGRAM_NAME}: ${PROGRAM_THEME}`,

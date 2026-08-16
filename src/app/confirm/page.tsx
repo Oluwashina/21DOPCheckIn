@@ -75,7 +75,7 @@ export default function ConfirmEmailPage() {
             <>
               <p className="text-sm text-muted">
                 Confirmation links can only be used once. Sign in with your email and
-                password instead — your account is already set up.
+                password instead. Your account is already set up.
               </p>
               <Link href="/login" className="block text-sm font-semibold text-gold-soft">
                 Go to sign in

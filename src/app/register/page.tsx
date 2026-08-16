@@ -135,7 +135,7 @@ export default function RegisterPage() {
               label="Team"
               hint={
                 sortedTeams.length === 0
-                  ? "No teams yet — an admin needs to add them first."
+                  ? "No teams yet. An admin needs to add them first."
                   : undefined
               }
             >

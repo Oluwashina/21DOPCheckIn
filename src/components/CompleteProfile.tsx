@@ -61,7 +61,7 @@ export function CompleteProfile() {
             />
           </Field>
 
-          <Field label="Phone number" hint="Optional — so your lead can reach you.">
+          <Field label="Phone number" hint="Optional. Your lead can reach you here.">
             <Input
               type="tel"
               inputMode="tel"

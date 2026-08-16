@@ -169,7 +169,7 @@ export default function SessionCheckInPage() {
         <Card className="text-center">
           <p className="text-[15px] font-semibold">This session hasn&apos;t opened yet</p>
           <p className="mt-1 text-sm text-muted">
-            Check-in unlocks on day {day.day_number}. Come back then — we&apos;ll be
+            Check-in unlocks on day {day.day_number}. Come back then. We&apos;ll be
             waiting. 🔥
           </p>
         </Card>
@@ -252,7 +252,7 @@ export default function SessionCheckInPage() {
           </div>
 
           <p className="mt-3 text-center text-xs text-faint">
-            You can check in without sharing or liking — tick those whenever you get to
+            You can check in without sharing or liking. Tick those whenever you get to
             them.
           </p>
 

@@ -73,7 +73,7 @@ function signInMessage(raw: string): string {
     return "Invalid credentials. Please check your details and try again.";
   }
   if (/email not confirmed/i.test(raw)) {
-    return "Please confirm your email first — check your inbox for the link.";
+    return "Please confirm your email first. Check your inbox for the link.";
   }
   if (/rate limit|too many requests/i.test(raw)) {
     return "Too many attempts. Please wait a moment and try again.";

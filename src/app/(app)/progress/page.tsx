@@ -11,10 +11,10 @@ import { useStore } from "@/lib/store";
 
 function encouragement(daysActive: number, daysElapsed: number, streak: number): string {
   if (daysElapsed === 0) return "Day one is loading. Get ready. 🔥";
-  if (streak >= 5) return `${streak} days in a row. You're on fire — keep going! 🔥`;
+  if (streak >= 5) return `${streak} days in a row. You're on fire. Keep going! 🔥`;
   if (daysActive === daysElapsed) return "Perfect record so far. Keep showing up! 🔥";
   if (daysActive / daysElapsed >= 0.6) return "You're doing great! Keep showing up. 🔥";
-  return "Today is a fresh start. Jump back in — we're glad you're here. 🔥";
+  return "Today is a fresh start. Jump back in. We're glad you're here. 🔥";
 }
 
 export default function ProgressPage() {

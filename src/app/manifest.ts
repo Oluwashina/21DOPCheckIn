@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${PROGRAM_NAME}: ${PROGRAM_THEME}`,
     short_name: PROGRAM_NAME,
-    description: `Check in and stay accountable with your service team — ${CHURCH_NAME}.`,
+    description: `Check in and stay accountable with your service team at ${CHURCH_NAME}.`,
     start_url: "/",
     scope: "/",
     display: "standalone",

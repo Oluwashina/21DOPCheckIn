@@ -84,5 +84,5 @@ export function reminderSubtext(reminder: SessionReminder): string {
   if (reminder.kind === "live") {
     return "Tap below to check in while the session is live.";
   }
-  return "Get ready — you can check in as soon as it goes live.";
+  return "Get ready. You can check in as soon as it goes live.";
 }

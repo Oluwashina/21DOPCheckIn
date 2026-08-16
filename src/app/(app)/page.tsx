@@ -9,8 +9,11 @@ import { Badge, Card, ProgressBar, SectionTitle } from "@/components/ui";
 import {
   formatLongDate,
   getSessionStatus,
+  isSunday,
   PROGRAM_LENGTH,
   PROGRAM_THEME,
+  SUNDAY_SERVICE_LABEL,
+  SUNDAY_SERVICE_VENUE,
 } from "@/lib/program";
 import {
   findCheckIn,
@@ -119,9 +122,16 @@ export default function HomePage() {
 
       {restDay ? (
         <Card>
-          <p className="text-[15px] font-semibold">No sessions today — take a breath.</p>
-          <p className="mt-1 text-sm text-muted">
-            Sessions run Monday to Friday.{" "}
+          <p className="text-[15px] font-semibold">No sessions today</p>
+          {isSunday(now) ? (
+            <p className="mt-1 text-sm text-muted">
+              Join us for service at {SUNDAY_SERVICE_VENUE}. Service starts at{" "}
+              {SUNDAY_SERVICE_LABEL}.
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-muted">Take a breath. Sessions run Monday to Friday.</p>
+          )}
+          <p className="mt-2 text-sm text-muted">
             {nextDay
               ? `Day ${nextDay.day_number} picks up on ${formatLongDate(nextDay.date)}.`
               : `That's a wrap on all ${PROGRAM_LENGTH} days. Well done. 🔥`}
@@ -173,7 +183,7 @@ export default function HomePage() {
           <Card className="mb-3 border-gold/25 bg-gold/5">
             <p className="text-sm text-muted">
               Joined after Day 1 or 2? If you were at those sessions, tap below and
-              check in — only for sessions you actually attended.
+              check in. Only for sessions you actually attended.
             </p>
           </Card>
           <div className="grid gap-3 sm:grid-cols-2">

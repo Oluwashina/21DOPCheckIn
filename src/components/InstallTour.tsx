@@ -130,7 +130,7 @@ export function InstallTour() {
                     Add {PROGRAM_NAME} to your home screen
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted">
-                    One tap to check in — opens full screen like a real app. No App Store or
+                    One tap to check in. Opens full screen like a real app. No App Store or
                     Play Store download.
                   </p>
                 </div>
@@ -152,7 +152,7 @@ export function InstallTour() {
                     <span className="mt-0.5 shrink-0 text-gold" aria-hidden>
                       ✓
                     </span>
-                    <span>Takes about 15 seconds — we&apos;ll show you how</span>
+                    <span>Takes about 15 seconds. We&apos;ll show you how.</span>
                   </li>
                 </ul>
               </div>
@@ -180,7 +180,7 @@ export function InstallTour() {
 
                 {installEvent ? (
                   <p className="rounded-2xl border border-gold/25 bg-gold/5 px-3.5 py-2.5 text-xs text-muted">
-                    Your browser supports one-tap install — use the button below if you
+                    Your browser supports one-tap install. Use the button below if you
                     prefer.
                   </p>
                 ) : null}

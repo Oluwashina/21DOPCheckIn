@@ -66,7 +66,7 @@ export function InstallHint() {
         <p className="text-sm font-bold text-text">Add to your home screen</p>
         {installEvent ? (
           <p className="mt-1 text-xs text-muted">
-            Install for one-tap check-ins — opens full screen like a native app.
+            Install for one-tap check-ins. Opens full screen like a native app.
           </p>
         ) : (
           <p className="mt-1 text-xs leading-relaxed text-muted">{summary}</p>
