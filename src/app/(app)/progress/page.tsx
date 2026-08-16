@@ -5,7 +5,7 @@ import { useMemo } from "react";
 
 import { FlameIcon } from "@/components/icons";
 import { Card, ProgressBar, ProgressRing, SectionTitle } from "@/components/ui";
-import { formatShortDate, fromISODate, PROGRAM_LENGTH } from "@/lib/program";
+import { CHECK_IN_DAY_COUNT, formatShortDate, fromISODate, PROGRAM_LENGTH } from "@/lib/program";
 import { getCurrentDay, getFirstMissedSessionOnDay, getMemberProgress, percent } from "@/lib/stats";
 import { useStore } from "@/lib/store";
 
@@ -67,7 +67,7 @@ export default function ProgressPage() {
             <p className="text-sm text-muted">Overall progress</p>
             <p className="mt-0.5 text-3xl font-extrabold tracking-tight">
               {progress.daysActive}
-              <span className="text-muted"> / {PROGRAM_LENGTH} days</span>
+              <span className="text-muted"> / {CHECK_IN_DAY_COUNT} session days</span>
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -109,25 +109,25 @@ export default function ProgressPage() {
       <section>
         <SectionTitle
           title="Your programme"
-          subtitle="Each row is a week, Monday to Friday. Tap a missed day to catch up."
+          subtitle="All 21 programme days. Weekends are rest days with no check-in."
         />
         <Card>
-          <div className="mb-2 grid grid-cols-5 gap-2 text-center text-[10px] font-bold uppercase tracking-wide text-faint sm:gap-2.5">
-            {["Mon", "Tue", "Wed", "Thu", "Fri"].map((label) => (
+          <div className="mb-2 grid grid-cols-7 gap-1.5 text-center text-[10px] font-bold uppercase tracking-wide text-faint sm:gap-2">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
               <span key={label}>{label}</span>
             ))}
           </div>
-          <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
-            {/* Keep day 1 under its real weekday column. */}
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {Array.from({ length: leadingOffset }).map((_, index) => (
               <span key={`offset-${index}`} aria-hidden />
             ))}
             {progress.perDay.map(({ day, attended, elapsed }) => {
               const isToday = day.day_number === currentDay.day_number;
-              const pending = elapsed === 0;
+              const isRest = !day.check_in_day;
+              const pending = !isRest && elapsed === 0;
               const intensity = attended === 0 ? 0 : attended / 3;
-              const missed = !pending && attended === 0;
-              const partial = !pending && attended > 0 && attended < elapsed;
+              const missed = !pending && !isRest && attended === 0;
+              const partial = !pending && !isRest && attended > 0 && attended < elapsed;
               const missedSession =
                 db && currentUser && (missed || partial)
                   ? getFirstMissedSessionOnDay(db, currentUser.id, day.id, now)
@@ -135,20 +135,26 @@ export default function ProgressPage() {
 
               const cell = (
                 <div
-                  title={`Day ${day.day_number} · ${formatShortDate(day.date)} · ${attended}/${
-                    elapsed || 3
-                  } sessions`}
+                  title={
+                    isRest
+                      ? `Day ${day.day_number} · ${formatShortDate(day.date)} · Rest day`
+                      : `Day ${day.day_number} · ${formatShortDate(day.date)} · ${attended}/${
+                          elapsed || 3
+                        } sessions`
+                  }
                   className={`relative flex aspect-square flex-col items-center justify-center rounded-xl border text-center transition-colors ${
-                    pending
-                      ? "border-line bg-surface-2/40 text-faint"
-                      : attended > 0
-                        ? "border-transparent text-ink"
-                        : "border-line bg-surface-2 text-faint"
+                    isRest
+                      ? "border-line/70 bg-surface-2/30 text-faint"
+                      : pending
+                        ? "border-line bg-surface-2/40 text-faint"
+                        : attended > 0
+                          ? "border-transparent text-ink"
+                          : "border-line bg-surface-2 text-faint"
                   } ${isToday ? "ring-2 ring-gold ring-offset-2 ring-offset-surface" : ""} ${
                     missedSession ? "hover:border-gold/40 hover:bg-surface-2" : ""
                   }`}
                   style={
-                    attended > 0 && !pending
+                    attended > 0 && !pending && !isRest
                       ? {
                           backgroundImage: `linear-gradient(140deg, rgba(255,243,191,${
                             0.5 + intensity * 0.5
@@ -157,11 +163,15 @@ export default function ProgressPage() {
                       : undefined
                   }
                 >
-                  <span className="text-[11px] font-bold leading-none">
+                  <span className="text-[10px] font-bold leading-none sm:text-[11px]">
                     {day.day_number}
                   </span>
-                  {!pending ? (
-                    <span className="mt-1 text-[9px] font-semibold opacity-80">
+                  {isRest ? (
+                    <span className="mt-0.5 text-[8px] font-semibold uppercase opacity-80 sm:text-[9px]">
+                      Rest
+                    </span>
+                  ) : !pending ? (
+                    <span className="mt-0.5 text-[8px] font-semibold opacity-80 sm:text-[9px]">
                       {attended > 0 ? `${attended}/3` : "—"}
                     </span>
                   ) : null}
@@ -186,8 +196,10 @@ export default function ProgressPage() {
               <span className="h-3 w-3 rounded border border-line bg-surface-2" /> Missed
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded border border-line bg-surface-2/40" /> Not
-              yet
+              <span className="h-3 w-3 rounded border border-line/70 bg-surface-2/30" /> Rest
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded border border-line bg-surface-2/40" /> Not yet
             </span>
           </div>
         </Card>

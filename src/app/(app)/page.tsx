@@ -10,6 +10,7 @@ import {
   formatLongDate,
   getSessionStatus,
   isSunday,
+  CHECK_IN_DAY_COUNT,
   PROGRAM_LENGTH,
   PROGRAM_THEME,
   SUNDAY_SERVICE_LABEL,
@@ -218,9 +219,9 @@ export default function HomePage() {
             <div>
               <p className="text-3xl font-extrabold tracking-tight">
                 {progress.daysActive}
-                <span className="text-muted"> / {PROGRAM_LENGTH}</span>
+                <span className="text-muted"> / {CHECK_IN_DAY_COUNT}</span>
               </p>
-              <p className="mt-0.5 text-sm text-muted">days you&apos;ve shown up</p>
+              <p className="mt-0.5 text-sm text-muted">session days you&apos;ve shown up</p>
             </div>
             <p className="text-2xl font-extrabold text-gradient-gold">
               {progress.percent}%

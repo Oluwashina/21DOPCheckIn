@@ -9,6 +9,7 @@ import {
   formatLongDate,
   formatShortDate,
   getSessionStatus,
+  CHECK_IN_DAY_COUNT,
   PROGRAM_DATE_RANGE,
   PROGRAM_LENGTH,
   shortTimeLabel,
@@ -62,7 +63,7 @@ export default function AdminSessionsPage() {
       <section>
         <h1 className="text-[30px] font-extrabold leading-tight tracking-tight">Sessions</h1>
         <p className="mt-1 text-sm text-muted">
-          Three sessions a day, {PROGRAM_LENGTH} days, {db.sessions.length} sessions total.
+          {PROGRAM_LENGTH} programme days ({CHECK_IN_DAY_COUNT} with sessions), {db.sessions.length} sessions total.
         </p>
         <p className="mt-1 text-sm text-muted">
           {PROGRAM_DATE_RANGE} · streaming on YouTube, {YOUTUBE_CHANNEL_NAME}
@@ -73,14 +74,18 @@ export default function AdminSessionsPage() {
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-faint">
           Schedule · Day {day.day_number}
         </p>
-        <ul className="space-y-2.5">
-          {sessions.map(({ session }) => (
-            <li key={session.id} className="flex items-center justify-between gap-3">
-              <span className="text-[15px] font-semibold">{session.name}</span>
-              <span className="shrink-0 text-sm text-muted">{shortTimeLabel(session.time)}</span>
-            </li>
-          ))}
-        </ul>
+        {day.check_in_day ? (
+          <ul className="space-y-2.5">
+            {sessions.map(({ session }) => (
+              <li key={session.id} className="flex items-center justify-between gap-3">
+                <span className="text-[15px] font-semibold">{session.name}</span>
+                <span className="shrink-0 text-sm text-muted">{shortTimeLabel(session.time)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">Rest day. No sessions scheduled.</p>
+        )}
       </Card>
 
       <section>
@@ -101,6 +106,15 @@ export default function AdminSessionsPage() {
           title={`Day ${day.day_number}`}
           subtitle={formatLongDate(day.date)}
         />
+        {!day.check_in_day ? (
+          <Card>
+            <p className="text-[15px] font-semibold">Rest day</p>
+            <p className="mt-1 text-sm text-muted">
+              No check-in sessions on weekends. Day {day.day_number} is part of the 21-day
+              programme calendar.
+            </p>
+          </Card>
+        ) : (
         <div className="space-y-2.5">
           {sessions.map(({ session, status, checkedIn, shared, liked }) => (
             <Card key={session.id}>
@@ -144,6 +158,7 @@ export default function AdminSessionsPage() {
             </Card>
           ))}
         </div>
+        )}
       </section>
     </div>
     </AdminOnly>

@@ -24,9 +24,12 @@ export interface Team {
 
 export interface Day {
   id: string;
+  /** Calendar day in the programme window, 1 through 21. */
   day_number: number;
   /** ISO calendar date, `yyyy-mm-dd` */
   date: string;
+  /** False on Saturdays and Sundays — no sessions, but still a programme day. */
+  check_in_day: boolean;
 }
 
 export interface Session {

@@ -1,4 +1,4 @@
-import { getSessionStatus, SESSION_BLUEPRINT, toISODate } from "./program";
+import { CHECK_IN_DAY_COUNT, getSessionStatus, SESSION_BLUEPRINT, toISODate } from "./program";
 import type { CheckIn, Database, Day, Session, SessionStatus, Team, User } from "./types";
 
 export interface AccountabilityTotals {
@@ -97,28 +97,30 @@ export function getDayByNumber(db: Database, dayNumber: number): Day | undefined
 }
 
 /**
- * The day the app should show. On a weekend (or after the programme ends) that
- * is the most recent programme day, so leads can still review it and members
- * can still catch up on a session they missed.
+ * The calendar programme day to anchor the UI. On a weekend this is still
+ * today's day (e.g. Day 7 on Sunday). Before the programme starts or after
+ * it ends, the first or last day is returned.
  */
 export function getCurrentDay(db: Database, now: Date = new Date()): Day {
   const today = toISODate(now);
   const exact = db.days.find((day) => day.date === today);
   if (exact) return exact;
 
-  const past = [...db.days].reverse().find((day) => day.date < today);
-  return past ?? db.days[0];
+  if (today < db.days[0].date) return db.days[0];
+  return db.days[db.days.length - 1];
 }
 
-/** True when today carries no sessions — a weekend, or outside the programme. */
+/** True when today has no check-in sessions — a weekend, or outside the programme. */
 export function isRestDay(db: Database, now: Date = new Date()): boolean {
   const today = toISODate(now);
-  return !db.days.some((day) => day.date === today);
+  const day = db.days.find((item) => item.date === today);
+  if (!day) return true;
+  return !day.check_in_day;
 }
 
 export function getNextProgramDay(db: Database, now: Date = new Date()): Day | undefined {
   const today = toISODate(now);
-  return db.days.find((day) => day.date > today);
+  return db.days.find((day) => day.date > today && day.check_in_day);
 }
 
 export function getSessionsForDay(db: Database, dayId: string): Session[] {
@@ -342,6 +344,11 @@ export function getMemberProgress(
 
   const perDay = db.days.map((day) => {
     const sessions = getSessionsForDay(db, day.id);
+
+    if (!day.check_in_day) {
+      return { day, attended: 0, total: 0, elapsed: 0 };
+    }
+
     const elapsedSessions = sessions.filter(
       (session) => getSessionStatus(day, session, now) !== "upcoming",
     );
@@ -378,7 +385,7 @@ export function getMemberProgress(
     shared,
     liked,
     streak,
-    percent: percent(daysActive, db.days.length),
+    percent: percent(daysActive, CHECK_IN_DAY_COUNT),
     perDay,
   };
 }

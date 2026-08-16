@@ -16,7 +16,7 @@ Three sessions run each programme day, **Monday to Friday**:
 | Evening Session | 6:30 PM (6:00 PM on Day 5) |
 
 The programme window is **10 – 30 August 2026**. Saturdays and Sundays are not check-in
-days at all, which leaves **15 check-in days**, ending Friday 28 August. Weekends never
+days at all. The programme runs **21 calendar days** (10–30 August), with **15 weekdays** for check-in. Weekends never
 count against a member's attendance or streak, and the app shows a rest-day screen on them.
 
 "21 Days of Power" is the campaign name; 15 is the number of days that carry sessions.
@@ -148,7 +148,7 @@ The number of days is derived from the window rather than hardcoded. Set
 turn on the "watch and like" links.
 
 Day numbers are read from the generated schedule, never calculated as "days since the
-start" — with weekends skipped, those two disagree (Monday 17 August is Day 6, not Day 8).
+start". Day numbers follow the calendar (17 August is Day 8). Weekends are programme days but have no sessions.
 
 ## Scripts
 

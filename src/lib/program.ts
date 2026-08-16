@@ -103,10 +103,10 @@ export function isWeekend(date: Date): boolean {
 }
 
 /**
- * Every check-in day in the programme window. Weekends are skipped entirely —
- * they are not programme days, so they can never count as missed.
+ * Every calendar day in the programme window, including weekends.
+ * Day numbers follow the calendar: 10 Aug = Day 1, 17 Aug = Day 8, 30 Aug = Day 21.
  */
-export function buildProgramDates(
+export function buildCalendarDates(
   startISO: string = PROGRAM_START_DATE,
   endISO: string = PROGRAM_END_DATE,
 ): string[] {
@@ -115,17 +115,66 @@ export function buildProgramDates(
   let cursor = fromISODate(startISO);
 
   while (cursor <= end) {
-    if (RUNS_ON_WEEKENDS || !isWeekend(cursor)) dates.push(toISODate(cursor));
+    dates.push(toISODate(cursor));
     cursor = addDays(cursor, 1);
   }
 
   return dates;
 }
 
-export const PROGRAM_DATES = buildProgramDates();
+/** Weekdays in the programme window — the only days with check-in sessions. */
+export function buildCheckInDates(
+  startISO: string = PROGRAM_START_DATE,
+  endISO: string = PROGRAM_END_DATE,
+): string[] {
+  return buildCalendarDates(startISO, endISO).filter((date) => !isWeekend(fromISODate(date)));
+}
 
-/** Number of check-in days — derived from the window, never hardcoded. */
-export const PROGRAM_LENGTH = PROGRAM_DATES.length;
+/** @deprecated Use {@link buildCheckInDates} — kept for scripts that filter weekdays. */
+export function buildProgramDates(
+  startISO: string = PROGRAM_START_DATE,
+  endISO: string = PROGRAM_END_DATE,
+): string[] {
+  return buildCheckInDates(startISO, endISO);
+}
+
+export const PROGRAM_CALENDAR_DATES = buildCalendarDates();
+
+/** Weekday dates that carry sessions. */
+export const CHECK_IN_DATES = buildCheckInDates();
+
+/** @deprecated Use {@link CHECK_IN_DATES} for sessions or {@link PROGRAM_CALENDAR_DATES} for all days. */
+export const PROGRAM_DATES = CHECK_IN_DATES;
+
+/** Calendar days in the programme (10 – 30 August 2026 = 21 days). */
+export const PROGRAM_LENGTH = PROGRAM_CALENDAR_DATES.length;
+
+/** Weekdays with sessions (15 days). */
+export const CHECK_IN_DAY_COUNT = CHECK_IN_DATES.length;
+
+export function isWithinProgramme(
+  dateISO: string,
+  startISO: string = PROGRAM_START_DATE,
+  endISO: string = PROGRAM_END_DATE,
+): boolean {
+  return dateISO >= startISO && dateISO <= endISO;
+}
+
+export function isCheckInDay(dateISO: string): boolean {
+  return isWithinProgramme(dateISO) && !isWeekend(fromISODate(dateISO));
+}
+
+/**
+ * Calendar day number (1–21), or `null` outside the programme window.
+ * Weekends count — Saturday 15 Aug is Day 6, Sunday 16 Aug is Day 7.
+ */
+export function getDayNumberForDate(dateISO: string): number | null {
+  if (!isWithinProgramme(dateISO)) return null;
+  const start = fromISODate(PROGRAM_START_DATE);
+  const date = fromISODate(dateISO);
+  const diffDays = Math.round((date.getTime() - start.getTime()) / 86_400_000);
+  return diffDays + 1;
+}
 
 /** e.g. "10 – 31 August 2026". Derived, so it can never drift. */
 export const PROGRAM_DATE_RANGE = (() => {
@@ -146,16 +195,21 @@ export const PROGRAM_DATE_RANGE = (() => {
  * `sessionId`. Moving a programme date is therefore a code change, not a
  * migration.
  */
-export function buildSchedule(dates: string[] = PROGRAM_DATES): {
+export function buildSchedule(
+  calendarDates: string[] = PROGRAM_CALENDAR_DATES,
+): {
   days: Day[];
   sessions: Session[];
 } {
   const days: Day[] = [];
   const sessions: Session[] = [];
 
-  dates.forEach((date, index) => {
+  calendarDates.forEach((date, index) => {
     const dayNumber = index + 1;
-    days.push({ id: date, day_number: dayNumber, date });
+    const check_in_day = !isWeekend(fromISODate(date));
+    days.push({ id: date, day_number: dayNumber, date, check_in_day });
+
+    if (!check_in_day) return;
 
     for (const blueprint of SESSION_BLUEPRINT) {
       sessions.push({
@@ -235,15 +289,3 @@ export const SESSION_STATUS_LABEL: Record<SessionStatus, string> = {
   completed: "Completed",
 };
 
-/**
- * Day number for a calendar date, or `null` on a weekend or outside the
- * programme. Day numbers come from the schedule, never from date arithmetic,
- * because skipped weekends make the two disagree.
- */
-export function getDayNumberForDate(
-  dateISO: string,
-  dates: string[] = PROGRAM_DATES,
-): number | null {
-  const index = dates.indexOf(dateISO);
-  return index === -1 ? null : index + 1;
-}

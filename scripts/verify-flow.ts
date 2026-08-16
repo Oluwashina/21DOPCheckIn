@@ -8,11 +8,13 @@
  */
 import {
   buildSchedule,
+  CHECK_IN_DAY_COUNT,
   fromISODate,
   getDayNumberForDate,
   getSessionStatus,
+  isCheckInDay,
   isWeekend,
-  PROGRAM_DATES,
+  isWithinProgramme,
   PROGRAM_END_DATE,
   PROGRAM_LENGTH,
   PROGRAM_START_DATE,
@@ -116,16 +118,26 @@ function main() {
   console.log("\nPROGRAMME SCHEDULE");
   const db = buildFixture();
 
-  check(`${PROGRAM_LENGTH} check-in days`, db.days.length === PROGRAM_LENGTH, db.days.length);
+  check(`${PROGRAM_LENGTH} calendar programme days`, db.days.length === PROGRAM_LENGTH, db.days.length);
   check(
-    `${PROGRAM_LENGTH * 3} sessions (3 per day)`,
-    db.sessions.length === PROGRAM_LENGTH * 3,
+    `${CHECK_IN_DAY_COUNT * 3} check-in sessions (3 per weekday)`,
+    db.sessions.length === CHECK_IN_DAY_COUNT * 3,
     db.sessions.length,
   );
   check(
-    "every day has 3 sessions",
-    db.days.every((day) => getSessionsForDay(db, day.id).length === 3),
+    "every check-in day has 3 sessions",
+    db.days
+      .filter((item) => item.check_in_day)
+      .every((item) => getSessionsForDay(db, item.id).length === 3),
   );
+  check(
+    "weekends are programme days without sessions",
+    db.days
+      .filter((item) => !item.check_in_day)
+      .every((item) => getSessionsForDay(db, item.id).length === 0),
+  );
+  check("17 august is day 8", getDayNumberForDate("2026-08-17") === 8);
+  check("30 august is day 21", getDayNumberForDate("2026-08-30") === 21);
   check(
     "every session id matches the database constraint",
     db.sessions.every((session) => SESSION_ID_PATTERN.test(session.id)),
@@ -140,16 +152,11 @@ function main() {
     buildSchedule().sessions[0].id === db.sessions[0].id,
   );
 
-  // Independently walk back from the window's end to the last weekday.
-  const expectedLast = (() => {
-    const cursor = fromISODate(PROGRAM_END_DATE);
-    while (isWeekend(cursor)) cursor.setDate(cursor.getDate() - 1);
-    return toISODate(cursor);
-  })();
+  // Programme ends on Sunday 30 August — the last calendar day.
   check(
-    "the last check-in day is the last weekday in the window",
-    db.days[db.days.length - 1].date === expectedLast,
-    `${db.days[db.days.length - 1].date} (expected ${expectedLast})`,
+    "the programme ends on the last calendar day",
+    db.days[db.days.length - 1].date === PROGRAM_END_DATE,
+    db.days[db.days.length - 1].date,
   );
   check(
     "no programme day falls outside the window",
@@ -157,8 +164,7 @@ function main() {
   );
   check(
     "no session lands on a weekend",
-    db.days.every((d) => !isWeekend(fromISODate(d.date))),
-    db.days.filter((d) => isWeekend(fromISODate(d.date))).map((d) => d.date),
+    db.sessions.every((session) => !isWeekend(fromISODate(session.day_id))),
   );
   check(
     "days run in strict calendar order",
@@ -192,13 +198,13 @@ function main() {
   const ics = buildProgramCalendarIcs(new Date("2026-08-01T12:00:00.000Z"));
   check(
     "calendar export includes every session",
-    countCalendarEvents(ics) === PROGRAM_LENGTH * 3,
+    countCalendarEvents(ics) === CHECK_IN_DAY_COUNT * 3,
     countCalendarEvents(ics),
   );
   check("calendar includes day 5 evening at 6pm", calendarIncludesDay5SixPm(ics));
   check(
     "calendar events include 30-minute alerts",
-    (ics.match(/BEGIN:VALARM/g) ?? []).length === PROGRAM_LENGTH * 3,
+    (ics.match(/BEGIN:VALARM/g) ?? []).length === CHECK_IN_DAY_COUNT * 3,
   );
 
   const reminderDay = db.days.find((d) => d.day_number === 1)!;
@@ -225,25 +231,32 @@ function main() {
   check(`${TEAM_NAMES.length} service teams configured`, TEAM_NAMES.length === 15);
 
   const day = getCurrentDay(db);
-  const todayNumber = getDayNumberForDate(todayISO(), PROGRAM_DATES);
+  const today = todayISO();
+  const todayNumber = getDayNumberForDate(today);
   check(
     todayNumber
       ? `today is day ${todayNumber} of the programme`
-      : "today is a rest day, so the app falls back to the most recent day",
-    todayNumber ? day.day_number === todayNumber : day.date < todayISO(),
-    { today: todayISO(), showing: day.date },
+      : "today is outside the programme window",
+    todayNumber ? day.day_number === todayNumber : !isWithinProgramme(today),
+    { today, showing: day.date },
   );
   check(
     "rest days are recognised",
-    isRestDay(db) === (todayNumber === null),
+    isRestDay(db) === (isWithinProgramme(today) && !isCheckInDay(today)),
   );
 
-  console.log("\nCHECKING IN");
-  const sessions = getSessionsForDay(db, day.id);
-  const target = sessions[sessions.length - 1];
-  check("session id is built from date and slot", target.id === sessionId(day.date, target.slot));
+  const sampleCheckInDay =
+    db.days.find((item) => item.check_in_day) ?? db.days[0];
 
-  const before = getTeamStatsForDay(db, TEAM_A, day.id);
+  console.log("\nCHECKING IN");
+  const sessions = getSessionsForDay(db, sampleCheckInDay.id);
+  const target = sessions[sessions.length - 1];
+  check(
+    "session id is built from date and slot",
+    target.id === sessionId(sampleCheckInDay.date, target.slot),
+  );
+
+  const before = getTeamStatsForDay(db, TEAM_A, sampleCheckInDay.id);
   check("nobody has checked in yet", before.checkedIn === 0);
 
   // Checked in, but not shared or liked yet — the three items are independent.
@@ -267,7 +280,7 @@ function main() {
   );
 
   console.log("\nTEAM AND PERSONAL ROLL-UPS");
-  const after = getTeamStatsForDay(db, TEAM_A, day.id);
+  const after = getTeamStatsForDay(db, TEAM_A, sampleCheckInDay.id);
   check("team day stats reflect the check-in", after.checkedIn === before.checkedIn + 1, {
     before: before.checkedIn,
     after: after.checkedIn,
@@ -327,7 +340,7 @@ function main() {
   db.users = db.users.map((u) => (u.id === "member-b" ? { ...u, active: false } : u));
   check(
     "a deactivated member drops out of team stats",
-    getTeamStatsForDay(db, TEAM_A, day.id).members === 3,
+    getTeamStatsForDay(db, TEAM_A, sampleCheckInDay.id).members === 3,
   );
   check(
     "a deactivated member drops out of programme totals",
